@@ -34,6 +34,10 @@ public class SecurityConfig {
 	                        "/users/change-password",
 	                        "/users/**",
 	                		"/users/signin",
+	                		"/admin/login",
+	                		"/admin/**",
+	                		"/owner/login",
+	                		"/owner/**",
 	                		"/webjars/**"
 	                		
 	                		) 

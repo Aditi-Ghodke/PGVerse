@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public UserRespDto getUserById(Long id) {
-		
+
 		return userDao.findByUserId(id)
 				.map(user->modelMapper.map(user, UserRespDto.class))
 				.orElseThrow(()->new ApiException("User Not Found!"));

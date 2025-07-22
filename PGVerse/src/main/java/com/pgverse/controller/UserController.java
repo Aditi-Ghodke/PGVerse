@@ -29,37 +29,44 @@ public class UserController {
 
 	private final UserService userService;
 	
-	@PostMapping("/signin")
+	//USER REGISTERATION
+	@PostMapping("/register")
 	public ResponseEntity<?> userRregisteration(@RequestBody @Valid UserReqDto dto){
 		
 			return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(dto));
 		
 	}
 	
+	//USER LOGIN
 	@PostMapping("/login")
 	public ResponseEntity<?> loginUser(@RequestBody LoginReqDTO dto) {
 		return ResponseEntity.ok(userService.loginUser(dto));
 	}
 	
+	//CHANGE PASSWORD
 	@PostMapping("/change-password")
 	public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO dto){
 		return ResponseEntity.ok(userService.changePassword(dto));
 	}
 	
+	//GET USER BY ID
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getUserById(@PathVariable Long id){
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(userService.getUserById(id));
 	}
 	
+	//UPDATE USER
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UpdateUserDTO dto){
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(userService.updateUserDetails(id,dto));
 	}
 	
+	
+	//DELETE USER
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> delteUser(@PathVariable Long id){
+	public ResponseEntity<?> deleteUser(@PathVariable Long id){
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(userService.deleteUser(id));
 		
