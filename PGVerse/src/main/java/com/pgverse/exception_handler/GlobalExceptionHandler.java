@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
 import com.pgverse.dto.ApiResponse;
 
@@ -31,4 +32,18 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(rejectedFields);
 	}
+	
+	@ExceptionHandler(ApiException.class)
+	public ResponseEntity<?> handleApiException(ApiException e){
+		return ResponseEntity
+		        .status(HttpStatus.BAD_REQUEST)
+		        .body(new ApiResponse(e.getMessage()));
+	}
+	
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<?> handleGeneralException(Exception e){
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ApiResponse("Something went wrong on the server"));
+	}
+	
 }
