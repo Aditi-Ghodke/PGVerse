@@ -1,5 +1,9 @@
 package com.pgverse.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,7 +28,7 @@ import lombok.ToString;
 @Setter
 @NoArgsConstructor
 @ToString(callSuper = true)
-@EqualsAndHashCode(of="name", callSuper = false)
+@EqualsAndHashCode(of="pgId", callSuper = false)
 public class PgProperty {
 
 	@Id
@@ -49,8 +54,17 @@ public class PgProperty {
 	@Column(length = 255, nullable = false)
 	private String description;
 	
+	
+	//mappedBy = "pgproperty" means
+	//The Room entity has a field named pgproperty.
+	//That field (in Room) owns the foreign key (pgproperty_id).
+	@OneToMany(mappedBy = "pgproperty", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<Room> rooms =  new ArrayList<>();
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "owner_id", nullable = false)
 	private Owner owner;
+	
+	
 	
 }

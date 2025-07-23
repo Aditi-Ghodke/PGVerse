@@ -26,7 +26,7 @@ public class PgPropertyImpl implements PgPropertyService{
 		List<PgProperty> pgproperties = pgPropertyDao.findAll();
 		
 		if(!pgproperties.isEmpty()) {
-			throw new ResourceNotFoundException("No PG found!");
+			throw new ResourceNotFoundException("No PG available!");
 		}
 		return pgproperties.stream()
 				.map(pg->modelMapper.map(pg, PgPropertyRespDTO.class))

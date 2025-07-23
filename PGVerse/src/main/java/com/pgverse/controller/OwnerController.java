@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.PgPropertyReqDTO;
+import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.service.OwnerService;
 import com.pgverse.service.PgPropertyService;
@@ -84,4 +86,39 @@ public class OwnerController {
 				.body(ownerService.getPropertyById(id));
 	}
 	
+	
+	//ADD ROOM PER PG
+	@PostMapping("/{pgId}/rooms")
+	public ResponseEntity<?> addRoomToPg(@PathVariable Long pgId, @Valid @RequestBody RoomReqDTO roomDto){
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ownerService.addRoomToPg(pgId,roomDto));
+	}
+	
+	//UPDATE ROOM
+	@PutMapping("/rooms/{roomId}")
+	public ResponseEntity<?> updateRoom(@PathVariable Long roomId, @Valid @RequestBody RoomReqDTO roomDto){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ownerService.updateRoom(roomId,roomDto));
+	}
+	
+	//DELETE ROOM
+	@DeleteMapping("/rooms/{roomId}")
+	public ResponseEntity<?> deleteRoom(@PathVariable Long roomId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ownerService.deleteRoom(roomId));
+	}
+	
+	//GET ALL ROOMS BY PGID
+	@GetMapping("/rooms/{pgId}")
+	public ResponseEntity<?> getAllRooms(@PathVariable Long pgId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ownerService.getAllRooms(pgId));
+	}
+	
+	//GET ROOM BY ROOMID
+	@GetMapping("/roomss/{rid}")
+	public ResponseEntity<?> getRoomById(@PathVariable Long rid){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ownerService.getRoomById(rid));
+	}
 }

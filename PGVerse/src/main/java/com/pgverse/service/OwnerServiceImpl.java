@@ -1,5 +1,8 @@
 package com.pgverse.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,20 +11,25 @@ import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
 import com.pgverse.dao.OwnerDao;
 import com.pgverse.dao.PgPropertyDao;
+import com.pgverse.dao.RoomDao;
 import com.pgverse.dto.ApiResponse;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.OwnerRespDto;
 import com.pgverse.dto.PgPropertyReqDTO;
 import com.pgverse.dto.PgPropertyRespDTO;
+import com.pgverse.dto.RoomReqDTO;
+import com.pgverse.dto.RoomRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.dto.UserRespDto;
 import com.pgverse.entities.Owner;
 import com.pgverse.entities.PgProperty;
 import com.pgverse.entities.PgType;
+import com.pgverse.entities.Room;
 import com.pgverse.entities.Status;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -33,6 +41,7 @@ public class OwnerServiceImpl implements OwnerService{
     private final OwnerDao ownerDao;
     private final ModelMapper modelMapper;
     private final PgPropertyDao pgPropertyDao;
+    private final RoomDao roomDao;
     
     //OWNER LOGIN
 	@Override
@@ -141,6 +150,77 @@ public class OwnerServiceImpl implements OwnerService{
 		pgpropertydto.setOwnername(pgproperty.getOwner().getName());
 		return pgpropertydto;
 	}
-	
 
+
+	@Override
+	public RoomRespDTO addRoomToPg(Long pgId, @Valid RoomReqDTO roomDto) {
+		PgProperty pg = pgPropertyDao.findByPgId(pgId)
+				.orElseThrow(()-> new ResourceNotFoundException("PG Not Found!"));
+		
+		Room room = modelMapper.map(roomDto, Room.class);
+		room.setPgproperty(pg);
+		
+		Room savedRoom = roomDao.save(room);
+		pg.getRooms().add(savedRoom);
+		
+		pgPropertyDao.save(pg);
+		
+		RoomRespDTO dto = modelMapper.map(savedRoom, RoomRespDTO.class);
+		dto.setPgId(savedRoom.getPgproperty().getPgId());
+		dto.setPgName(savedRoom.getPgproperty().getName());
+		
+		return  dto;
+	}
+
+
+	@Override
+	public RoomRespDTO updateRoom(Long roomId, RoomReqDTO roomDto) {
+		
+		Room room = roomDao.findByRoomId(roomId)
+				.orElseThrow(()-> new ResourceNotFoundException("Room not Found!"));
+		
+		modelMapper.map(roomDto, room);
+		Room updatedRoom = roomDao.save(room);
+		
+		RoomRespDTO dto = modelMapper.map(updatedRoom, RoomRespDTO.class);
+		dto.setPgId(updatedRoom.getPgproperty().getPgId());
+		dto.setPgName(updatedRoom.getPgproperty().getName());
+		
+		return dto;
+	}
+
+
+	//DELETE ROOM BY ROOM ID
+	@Override
+	public ApiResponse deleteRoom(Long roomId) {
+		Room room = roomDao.findByRoomId(roomId)
+				.orElseThrow(()-> new ResourceNotFoundException("Room not Found!"));
+		
+		roomDao.delete(room);
+		
+		return new ApiResponse("Room deleted successfully!");
+	}
+
+
+	//GET ALL ROOMS BY PGID
+	@Override
+	public List<RoomRespDTO> getAllRooms(Long pgId) {
+		PgProperty pgProp = pgPropertyDao.findByPgId(pgId)
+				.orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+		return pgProp.getRooms().stream()
+				.map(room->modelMapper.map(room, RoomRespDTO.class))
+				.collect(Collectors.toList());
+	}
+
+
+	//GET ROOM BY ROOM ID
+	@Override
+	public RoomRespDTO getRoomById(Long roomId) {
+		Room room = roomDao.findByRoomId(roomId)
+				.orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+		RoomRespDTO dto = modelMapper.map(room, RoomRespDTO.class);
+		dto.setPgId(room.getPgproperty().getPgId());
+		dto.setPgName(room.getPgproperty().getName());
+		return dto;
+	}
 }
