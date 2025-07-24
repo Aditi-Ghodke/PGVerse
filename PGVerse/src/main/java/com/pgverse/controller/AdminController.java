@@ -61,17 +61,17 @@ public class AdminController {
 	}
 	
 	//GET ALL OWNERS BY ID
-	@GetMapping("/owner/{id}")
-	public ResponseEntity<?>getOwnerById(@PathVariable Long id){
+	@GetMapping("/owner/{ownerId}")
+	public ResponseEntity<?>getOwnerById(@PathVariable Long ownerId){
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(adminService.getOwnerById(id));
+				.body(adminService.getOwnerById(ownerId));
 	}
 	
 	//DELETE OWNER
-	@DeleteMapping("/owner/{id}")
-	public ResponseEntity<?> deleteOwner(@PathVariable Long id){
+	@DeleteMapping("/owner/{ownerId}")
+	public ResponseEntity<?> deleteOwner(@PathVariable Long ownerId){
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(adminService.deleteOwner(id));
+				.body(adminService.deleteOwner(ownerId));
 	}
 	
 }

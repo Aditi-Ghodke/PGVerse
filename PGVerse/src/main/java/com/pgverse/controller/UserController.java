@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
+import com.pgverse.dto.ReviewReqDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.dto.UserReqDto;
 import com.pgverse.service.UserService;
@@ -69,6 +70,47 @@ public class UserController {
 	public ResponseEntity<?> deleteUser(@PathVariable Long id){
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(userService.deleteUser(id));
+	}
+	
+	//----------REVIEW
+	
+	//ADD REVIEW
+	@PostMapping("/reviews/{pgId}/{userId}")
+	public ResponseEntity<?> giveReview(@RequestBody @Valid ReviewReqDTO dto, 
+			@PathVariable Long pgId, @PathVariable Long userId){
+			return ResponseEntity.status(HttpStatus.CREATED)
+					.body(userService.giveReview(dto, pgId, userId));
 		
+	}
+	
+	
+	//UPDATE
+	@PutMapping("/reviews/{reviewId}")
+	public ResponseEntity<?> updateReview(@PathVariable Long reviewId, 
+			@RequestBody ReviewReqDTO dto){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(userService.updateReview(reviewId,dto));
+	}
+	
+	
+	//GET REVIEW BY USERID
+	@GetMapping("/{userId}/reviews")
+	public ResponseEntity<?> getReviewByUserId(@PathVariable Long userId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(userService.getReviewById(userId));
+	}
+	
+	//GET REVIEW BY USERID
+	@GetMapping("/pgproperty/{pgId}/reviews")
+	public ResponseEntity<?> getReviewByPgId(@PathVariable Long pgId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(userService.reviewForPg(pgId));
+	}
+	
+	//DELETE REIEW
+	@DeleteMapping("/reviews/{reviewId}")
+	public ResponseEntity<?> deleteReview(@PathVariable Long reviewId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(userService.deleteReview(reviewId));
 	}
 }

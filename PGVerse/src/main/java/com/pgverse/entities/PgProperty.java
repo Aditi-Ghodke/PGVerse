@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -54,6 +55,14 @@ public class PgProperty {
 	@Column(length = 255, nullable = false)
 	private String description;
 	
+//	@Lob
+//	@Column(name = "image", columnDefinition = "LONGBLOB")
+//	private byte[] image; 
+	
+	
+	  @Column(length = 255)
+	 private String imagePath; 
+
 	
 	//mappedBy = "pgproperty" means
 	//The Room entity has a field named pgproperty.
@@ -65,6 +74,6 @@ public class PgProperty {
 	@JoinColumn(name = "owner_id", nullable = false)
 	private Owner owner;
 	
-	
-	
+	@OneToMany(mappedBy = "pgProperty", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	List<Review> reviewss = new ArrayList<>();
 }

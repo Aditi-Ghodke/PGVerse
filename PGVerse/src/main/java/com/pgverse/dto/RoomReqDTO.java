@@ -26,4 +26,6 @@ public class RoomReqDTO {
 	
 	private boolean available;
 	
+	private String imagePath; 
+	
 }

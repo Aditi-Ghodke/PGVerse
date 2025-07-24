@@ -25,7 +25,7 @@ public class PgPropertyImpl implements PgPropertyService{
 	public List<PgPropertyRespDTO> getAllPg() {
 		List<PgProperty> pgproperties = pgPropertyDao.findAll();
 		
-		if(!pgproperties.isEmpty()) {
+		if(pgproperties.isEmpty()) {
 			throw new ResourceNotFoundException("No PG available!");
 		}
 		return pgproperties.stream()

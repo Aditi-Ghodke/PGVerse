@@ -1,5 +1,7 @@
 package com.pgverse.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,4 +20,8 @@ public class PgPropertyReqDTO {
 	
 	@NotBlank(message = "Please enter the description")
 	private String description;
+	
+	private String imagePath; 
+	//private byte[] image;
+	//private MultipartFile imageData; 
 }

@@ -112,6 +112,7 @@ public class AdminServiceImpl implements AdminService{
 	public ApiResponse deleteOwner(Long id) {
 		Owner owner = ownerDao.findByOwnerId(id)
 				.orElseThrow(()->new ResourceNotFoundException("Owner Not Found!"));
+		ownerDao.delete(owner);
 		return new ApiResponse("Owner Deleted Successfully!");
 	
 		

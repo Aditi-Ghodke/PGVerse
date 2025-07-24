@@ -15,4 +15,5 @@ public class RoomRespDTO {
 	private boolean available; 
 	private Long pgId;
 	private String pgName;
+	private String imagePath;
 }

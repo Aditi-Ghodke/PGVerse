@@ -38,6 +38,7 @@ public class SecurityConfig {
 	                		"/admin/**",
 	                		"/owner/login",
 	                		"/owner/**",
+	                		"/pgproperty/**",
 	                		"/webjars/**"
 	                		
 	                		) 

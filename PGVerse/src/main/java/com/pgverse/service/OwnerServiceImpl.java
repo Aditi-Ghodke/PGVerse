@@ -1,11 +1,17 @@
 package com.pgverse.service;
-
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
@@ -21,7 +27,6 @@ import com.pgverse.dto.PgPropertyRespDTO;
 import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.RoomRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
-import com.pgverse.dto.UserRespDto;
 import com.pgverse.entities.Owner;
 import com.pgverse.entities.PgProperty;
 import com.pgverse.entities.PgType;
@@ -85,7 +90,7 @@ public class OwnerServiceImpl implements OwnerService{
 	
 	//UPDATE OWNER
 	@Override
-	public OwnerRespDto updateUserDetails(Long id, UpdateUserDTO dto) {
+	public OwnerRespDto updateOwner(Long id, UpdateUserDTO dto) {
 		Owner owner = ownerDao.findByOwnerId(id)
 				.orElseThrow(()->new ResourceNotFoundException("Owner Not Found!"));
 		modelMapper.map(dto,owner);
@@ -93,33 +98,41 @@ public class OwnerServiceImpl implements OwnerService{
 		
 		return modelMapper.map(owner, OwnerRespDto.class);
 	}
-
-
-	//ADD PROPERTY
-	@Override
-	public PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, Long ownerId) {
-		
-		Owner owner  = ownerDao.findByOwnerId(ownerId)
-				.orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
-		
-		PgProperty pg = modelMapper.map(dto, PgProperty.class);
-		pg.setStatus(Status.AVAILABLE);
-		pg.setPgType(PgType.GIRLS);
-		pg.setOwner(owner);
-		PgProperty savedPg = pgPropertyDao.save(pg);
-		PgPropertyRespDTO res = modelMapper.map(savedPg, PgPropertyRespDTO.class);
-		res.setOwnerid(owner.getOwnerId());
-		res.setOwnername(owner.getName());
-		return res;
-	}
-
-
+	
 	//UPDATE PROPERTY
 	@Override
-	public PgPropertyRespDTO updatePgProperty(Long id, PgPropertyReqDTO dto) {
+	public PgPropertyRespDTO updatePgProperty(Long id,MultipartFile imageFile, PgPropertyReqDTO dto) {
 		
 		PgProperty pgproperty = pgPropertyDao.findByPgId(id)
 				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
+		
+		//Image handling
+		 if (imageFile != null && !imageFile.isEmpty()) {
+		        try {
+		            // Delete the old image file if it exists
+		            String oldImagePath = pgproperty.getImagePath();
+		            if (oldImagePath != null) {
+		                File oldFile = new File(oldImagePath);
+		                if (oldFile.exists()) oldFile.delete();
+		            }
+
+		            // Save new image
+		            String uploadDir = "uploads/images/";
+		            File dir = new File(uploadDir);
+		            if (!dir.exists()) dir.mkdirs();
+
+		            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+		            Path filePath = Paths.get(uploadDir + fileName);
+		            Files.write(filePath, imageFile.getBytes());
+
+		            // Update image path in entity
+		            pgproperty.setImagePath(uploadDir + fileName);
+
+		        } catch (IOException e) {
+		            throw new RuntimeException("Failed to update image", e);
+		        }
+		 }
+		
 		modelMapper.map(dto,pgproperty);
 		PgProperty updated =  pgPropertyDao.save(pgproperty);
 		
@@ -136,6 +149,18 @@ public class OwnerServiceImpl implements OwnerService{
 	public ApiResponse deletePgProperty(Long id) {
 		PgProperty pgproperty = pgPropertyDao.findByPgId(id)
 				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
+		
+		//delete image
+		   if (pgproperty.getImagePath() != null) {
+			   //System.getProperty gives root folder
+		        String imagePath = System.getProperty("user.dir") + "/uploads/" + pgproperty.getImagePath();
+		        File imageFile = new File(imagePath);
+		        if (imageFile.exists()) {
+		            boolean deleted = imageFile.delete();
+		            System.out.println("Image deleted: " + deleted);
+		        }
+		    }
+		   
 		pgPropertyDao.delete(pgproperty);
 		return new ApiResponse("PG Deleted Successfully!");
 	}
@@ -150,16 +175,57 @@ public class OwnerServiceImpl implements OwnerService{
 		pgpropertydto.setOwnername(pgproperty.getOwner().getName());
 		return pgpropertydto;
 	}
+	
+	//GET PGPROPERTY BY OWNER ID
+	@Override
+	public List<PgPropertyRespDTO> getPgByOwnerId(Long ownerId) {
+		Owner owner =  ownerDao.findByOwnerId(ownerId)
+				.orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
+		
+		List<PgProperty> pgList = owner.getPg();
+		if(pgList.isEmpty() || pgList == null) {
+			throw new ResourceNotFoundException("No PG properties found for the owner");
+		}
+		return owner.getPg().stream().map( pg->{
+			PgPropertyRespDTO dto = modelMapper.map(pg, PgPropertyRespDTO.class);
+			
+			dto.setOwnerid(owner.getOwnerId());
+			dto.setOwnername(owner.getName());
+			dto.setImagePath(pg.getImagePath());
+			return dto;
+		}).collect(Collectors.toList());
+		
+	
+	}
 
 
 	@Override
-	public RoomRespDTO addRoomToPg(Long pgId, @Valid RoomReqDTO roomDto) {
+	public RoomRespDTO addRoomToPg(Long pgId,MultipartFile imageFile, @Valid RoomReqDTO roomDto) {
 		PgProperty pg = pgPropertyDao.findByPgId(pgId)
 				.orElseThrow(()-> new ResourceNotFoundException("PG Not Found!"));
 		
 		Room room = modelMapper.map(roomDto, Room.class);
 		room.setPgproperty(pg);
 		
+		//Image handling
+		 if (imageFile != null && !imageFile.isEmpty()) {
+		        try {
+		            // Generate a unique file name
+		            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+		            String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
+		            File dir = new File(uploadDir);
+		            if (!dir.exists()) dir.mkdirs();
+
+		            File destination = new File(uploadDir + fileName);
+		            imageFile.transferTo(destination);
+
+		            // Set image path to entity
+		            room.setImagePath(fileName);
+		        } catch (IOException e) {
+		            throw new RuntimeException("Image upload failed!", e);
+		        }
+		    }
+		 
 		Room savedRoom = roomDao.save(room);
 		pg.getRooms().add(savedRoom);
 		
@@ -174,12 +240,40 @@ public class OwnerServiceImpl implements OwnerService{
 
 
 	@Override
-	public RoomRespDTO updateRoom(Long roomId, RoomReqDTO roomDto) {
+	public RoomRespDTO updateRoom(Long roomId, MultipartFile imageFile, RoomReqDTO roomDto) {
 		
 		Room room = roomDao.findByRoomId(roomId)
 				.orElseThrow(()-> new ResourceNotFoundException("Room not Found!"));
 		
 		modelMapper.map(roomDto, room);
+		
+		if (imageFile != null && !imageFile.isEmpty()) {
+		    try {
+		       
+		        String oldImagePath = room.getImagePath();
+		        if (oldImagePath != null) {
+		            File oldFile = new File(oldImagePath);
+		            if (oldFile.exists()) oldFile.delete();
+		        }
+
+		       
+		        String uploadDir = "uploads/rooms/";
+		        File dir = new File(uploadDir);
+		        if (!dir.exists()) dir.mkdirs();
+
+		        
+		        String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+		        Path filePath = Paths.get(uploadDir + fileName);
+		        Files.write(filePath, imageFile.getBytes());
+
+		    
+		        room.setImagePath(uploadDir + fileName);
+
+		    } catch (IOException e) {
+		        throw new RuntimeException("Failed to update room image", e);
+		    }
+		}
+
 		Room updatedRoom = roomDao.save(room);
 		
 		RoomRespDTO dto = modelMapper.map(updatedRoom, RoomRespDTO.class);
@@ -205,13 +299,23 @@ public class OwnerServiceImpl implements OwnerService{
 	//GET ALL ROOMS BY PGID
 	@Override
 	public List<RoomRespDTO> getAllRooms(Long pgId) {
-		PgProperty pgProp = pgPropertyDao.findByPgId(pgId)
-				.orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
-		return pgProp.getRooms().stream()
-				.map(room->modelMapper.map(room, RoomRespDTO.class))
-				.collect(Collectors.toList());
-	}
+	    PgProperty pgProp = pgPropertyDao.findByPgId(pgId)
+	            .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
 
+	    List<Room> rooms = pgProp.getRooms();
+	    if(rooms == null || rooms.isEmpty()) {
+	    	throw new ResourceNotFoundException("Rooms not found");
+	    }
+	    return pgProp.getRooms().stream().map(room -> {
+	        RoomRespDTO dto = modelMapper.map(room, RoomRespDTO.class);
+
+	        dto.setPgId(pgProp.getPgId());
+	        dto.setPgName(pgProp.getName());
+	        dto.setImagePath(pgProp.getImagePath()); 
+
+	        return dto;
+	    }).collect(Collectors.toList());
+	}
 
 	//GET ROOM BY ROOM ID
 	@Override
@@ -221,6 +325,43 @@ public class OwnerServiceImpl implements OwnerService{
 		RoomRespDTO dto = modelMapper.map(room, RoomRespDTO.class);
 		dto.setPgId(room.getPgproperty().getPgId());
 		dto.setPgName(room.getPgproperty().getName());
+		dto.setImagePath(room.getImagePath());
 		return dto;
 	}
+
+	@Override
+	public PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId)
+	        throws IOException {
+
+	    String uploadDir = "uploads/images/pg_property/";
+	    File dir = new File(uploadDir);
+	    if (!dir.exists()) dir.mkdirs();
+
+	    String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+	    Path filePath = Paths.get(uploadDir + fileName);
+	    Files.write(filePath, imageFile.getBytes());
+
+	    Owner owner = ownerDao.findByOwnerId(ownerId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
+
+	    PgProperty pg = modelMapper.map(dto, PgProperty.class);
+	    pg.setStatus(Status.AVAILABLE);
+	    pg.setPgType(PgType.GIRLS);
+	    pg.setOwner(owner);
+	    
+	    pg.setImagePath(uploadDir + fileName);
+
+	    
+	    PgProperty savedPg = pgPropertyDao.save(pg);
+
+	   
+	    PgPropertyRespDTO res = modelMapper.map(savedPg, PgPropertyRespDTO.class);
+	    res.setOwnerid(owner.getOwnerId());
+	    res.setOwnername(owner.getName());
+
+	    return res;
+	}
+
+
+
 }

@@ -1,6 +1,5 @@
 package com.pgverse.dto;
 
-import com.pgverse.entities.Owner;
 import com.pgverse.entities.PgType;
 import com.pgverse.entities.Status;
 
@@ -19,4 +18,5 @@ public class PgPropertyRespDTO {
 	private String description;
 	private Long ownerid;
 	private String ownername;
+	private String imagePath;
 }

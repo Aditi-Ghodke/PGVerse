@@ -19,7 +19,7 @@ public class PgPropertyController {
 
 	public final PgPropertyService pgservice;
 	
-	@GetMapping()
+	@GetMapping("/pg")
 	public ResponseEntity<?> getAllPg(){
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(pgservice.getAllPg());
