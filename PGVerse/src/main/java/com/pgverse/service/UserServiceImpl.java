@@ -1,5 +1,7 @@
 package com.pgverse.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,24 +11,36 @@ import org.springframework.stereotype.Service;
 
 import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
+import com.pgverse.dao.BookingDao;
+import com.pgverse.dao.PaymentDao;
 import com.pgverse.dao.PgPropertyDao;
 import com.pgverse.dao.ReviewDao;
+import com.pgverse.dao.RoomDao;
 import com.pgverse.dao.UserDao;
 import com.pgverse.dto.ApiResponse;
+import com.pgverse.dto.BookingReqDTO;
+import com.pgverse.dto.BookingRespDTO;
+import com.pgverse.dto.BookingUpdateReqDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
+import com.pgverse.dto.PaymentReqDTO;
 import com.pgverse.dto.ReviewReqDTO;
 import com.pgverse.dto.ReviewRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.dto.UserReqDto;
 import com.pgverse.dto.UserRespDto;
+import com.pgverse.entities.Booking;
+import com.pgverse.entities.BookingStatus;
+import com.pgverse.entities.Payment;
+import com.pgverse.entities.PaymentStatus;
 import com.pgverse.entities.PgProperty;
 import com.pgverse.entities.Review;
 import com.pgverse.entities.Role;
+import com.pgverse.entities.Room;
+import com.pgverse.entities.RoomStatus;
 import com.pgverse.entities.User;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -39,6 +53,9 @@ public class UserServiceImpl implements UserService{
 	private final ModelMapper modelMapper;
 	private final PgPropertyDao pgPropertyDao;
 	private final ReviewDao reviewDao;
+    private final RoomDao roomDao;
+    private final BookingDao bookingDao;
+    private final PaymentDao paymentDao;
 	
 	@Override
 	public UserRespDto registerUser(UserReqDto dto) {
@@ -193,5 +210,225 @@ public class UserServiceImpl implements UserService{
 	}
 
 	
+	
+	//---------BOOKING----------
+	//CREATE BOOKING
+	public BookingRespDTO createBooking(BookingReqDTO dto) {
+        User user = userDao.findByUserId(dto.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Room room = roomDao.findById(dto.getRoomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+        PgProperty pgProperty = pgPropertyDao.findByPgId(dto.getPgId())
+                .orElseThrow(() -> new ResourceNotFoundException("PG not found"));
+        LocalDate today = LocalDate.now();
+        
+        if (dto.getCheckInDate().isBefore(today)) {
+            throw new ApiException("Check-in date cannot be in the past");
+        }
+
+        if (!dto.getCheckOutDate().isAfter(dto.getCheckInDate())) {
+            throw new ApiException("Check-out date must be after check-in date");
+        }
+
+        if (bookingDao.isRoomBooked(room, dto.getCheckInDate(), dto.getCheckOutDate(), BookingStatus.BOOKED)) {
+            throw new ApiException("Room is already booked for the selected dates");
+        }
+	        
+        Booking booking = new Booking();
+        booking.setUser(user);
+        booking.setRoom(room);
+        booking.setPgProperty(pgProperty);
+        //booking.setStatus(dto.getStatus() != null ? dto.getStatus() );
+        booking.setStatus(dto.getStatus() != null ? dto.getStatus() : BookingStatus.CONFIRMED);
+        booking.setBookingDate(LocalDate.now());
+        booking.setCheckInDate(dto.getCheckInDate());
+        booking.setCheckOutDate(dto.getCheckOutDate());
+
+        Booking savedBooking = bookingDao.save(booking);
+
+        // Map to response DTO, payment fields empty for now
+        BookingRespDTO respDto = modelMapper.map(savedBooking, BookingRespDTO.class);
+        respDto.setRoomId(savedBooking.getRoom().getRoomId());
+        respDto.setPgPropertId(savedBooking.getPgProperty().getPgId());
+        respDto.setPgPropertyName(savedBooking.getPgProperty().getName());
+        respDto.setUserId(savedBooking.getUser().getUserId());
+        respDto.setUserName(savedBooking.getUser().getName());
+        
+
+        return respDto;
+        
+    }
+	
+	
+	 // 2. Create Payment linked to existing Booking
+    public BookingRespDTO makePayment(Long bookingId, PaymentReqDTO paymentDTO) {
+        Booking booking = bookingDao.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        if(booking.getPayment() != null) {
+            throw new ApiException("Payment already exists for this booking");
+        }
+
+        
+        //CHECK PRICE
+        
+        Room room = booking.getRoom();
+        double expectedAmount = room.getPricePerMonth();
+        
+        if(paymentDTO.getAmount()!=expectedAmount) {
+        	throw new ApiException("Invalid payment amount. Expected: " + expectedAmount);
+        }
+        
+        Payment payment = new Payment();
+        payment.setAmount(paymentDTO.getAmount());
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setPaymentStatus(paymentDTO.getPaymentStatus() != null ? paymentDTO.getPaymentStatus() : PaymentStatus.SUCCESS);
+        payment.setBooking(booking);
+
+        Payment savedPayment = paymentDao.save(payment);
+
+        booking.setPayment(savedPayment);
+        bookingDao.save(booking);
+
+        // Map to BookingRespDTO including payment info
+        BookingRespDTO respDto = modelMapper.map(booking, BookingRespDTO.class);
+        respDto.setRoomId(booking.getRoom().getRoomId());
+        respDto.setPgPropertId(booking.getPgProperty().getPgId());
+        respDto.setPgPropertyName(booking.getPgProperty().getName());
+        respDto.setUserId(booking.getUser().getUserId());
+        respDto.setUserName(booking.getUser().getName());
+
+        respDto.setPaymentId(savedPayment.getPaymentId());
+        respDto.setAmount(savedPayment.getAmount());
+        respDto.setPaymentStatus(savedPayment.getPaymentStatus());
+        respDto.setPaymentDate(savedPayment.getPaymentDate());
+
+        return respDto;
+    }
+
+    
+  //GET ALL BOOKINGS BY USERID
+	@Override
+	public List<BookingRespDTO> getBookingsByUserId(Long userId) {
+		User user = userDao.findByUserId(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		
+		List<Booking> bookings = bookingDao.findByUserUserId(userId);
+		
+		if(bookings.isEmpty()) {
+			throw new ResourceNotFoundException("No bookings found for this user");
+		}
+		
+		return bookings.stream().map(booking -> {
+			BookingRespDTO dto = modelMapper.map(booking, BookingRespDTO.class);
+			
+			//SET ROOM AND PGPROPERTY
+	        if (booking.getRoom() != null) {
+	            dto.setRoomId(booking.getRoom().getRoomId());
+
+	            if (booking.getRoom().getPgproperty() != null) {
+	                dto.setPgPropertId(booking.getRoom().getPgproperty().getPgId());
+	                dto.setPgPropertyName(booking.getRoom().getPgproperty().getName());
+	            }
+	        }
+	        
+	     //SET USER
+	        if (booking.getUser() != null) {
+	            dto.setUserId(booking.getUser().getUserId());
+	            dto.setUserName(booking.getUser().getName());
+	        }
+
+	        //SET PAYMENT
+	        if (booking.getPayment() != null) {
+	            dto.setPaymentId(booking.getPayment().getPaymentId());
+	            dto.setAmount(booking.getPayment().getAmount());
+	            dto.setPaymentStatus(booking.getPayment().getPaymentStatus());
+	            dto.setPaymentDate(booking.getPayment().getPaymentDate());
+	        }
+	        return dto;
+	    }).collect(Collectors.toList());
+	}
+
+
+
+
+	@Override
+	public BookingRespDTO cancelBookingsByUserId(Long userId, Long bookingId) {
+		 User user = userDao.findByUserId(userId)
+		            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+		 
+		 Booking booking = bookingDao.findById(bookingId)
+		            .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+		    
+		  if(!booking.getUser().getUserId().equals(userId)) {
+			  throw new ResourceNotFoundException("Booking does not belong to this user");
+		  }
+		  
+		  booking.setStatus(BookingStatus.CANCELLED);
+		  
+		  if(booking.getRoom()!=null) {
+			  booking.getRoom().setStatus(RoomStatus.AVAILABLE);	
+			  roomDao.save(booking.getRoom());
+			  }
+		    
+		  bookingDao.save(booking);
+		  
+		  BookingRespDTO dto = modelMapper.map(booking, BookingRespDTO.class);
+		    dto.setUserId(user.getUserId());
+		    dto.setUserName(user.getName());
+		    if (booking.getRoom() != null) {
+		        dto.setRoomId(booking.getRoom().getRoomId());
+		        if (booking.getRoom().getPgproperty() != null) {
+		            dto.setPgPropertId(booking.getRoom().getPgproperty().getPgId());
+		            dto.setPgPropertyName(booking.getRoom().getPgproperty().getName());
+		        }
+		    }
+		    if (booking.getPayment() != null) {
+		        dto.setPaymentId(booking.getPayment().getPaymentId());
+		        dto.setAmount(booking.getPayment().getAmount());
+		        dto.setPaymentStatus(booking.getPayment().getPaymentStatus());
+		        dto.setPaymentDate(booking.getPayment().getPaymentDate());
+		    }
+
+		    return dto;
+	}
+
+	
+	@Override
+	public BookingRespDTO getBookingById(Long bookingId) {
+	    Booking booking = bookingDao.findById(bookingId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+	    BookingRespDTO dto = modelMapper.map(booking, BookingRespDTO.class);
+
+	    // Set Room and PGProperty
+	    if (booking.getRoom() != null) {
+	        dto.setRoomId(booking.getRoom().getRoomId());
+
+	        if (booking.getRoom().getPgproperty() != null) {
+	            dto.setPgPropertId(booking.getRoom().getPgproperty().getPgId());
+	            dto.setPgPropertyName(booking.getRoom().getPgproperty().getName());
+	        }
+	    }
+
+	    // Set User
+	    if (booking.getUser() != null) {
+	        dto.setUserId(booking.getUser().getUserId());
+	        dto.setUserName(booking.getUser().getName());
+	    }
+
+	    // Set Payment
+	    if (booking.getPayment() != null) {
+	        dto.setPaymentId(booking.getPayment().getPaymentId());
+	        dto.setAmount(booking.getPayment().getAmount());
+	        dto.setPaymentStatus(booking.getPayment().getPaymentStatus());
+	        dto.setPaymentDate(booking.getPayment().getPaymentDate());
+	    }
+
+	    return dto;
+	}
 
 }

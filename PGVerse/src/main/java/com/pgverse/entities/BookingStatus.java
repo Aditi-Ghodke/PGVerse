@@ -1,5 +1,7 @@
 package com.pgverse.entities;
 
 public enum BookingStatus {
-	BOOKED, CANCELLED
+	BOOKED,
+    CONFIRMED,
+    CANCELLED
 }

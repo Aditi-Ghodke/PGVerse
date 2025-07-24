@@ -55,11 +55,6 @@ public class PgProperty {
 	@Column(length = 255, nullable = false)
 	private String description;
 	
-//	@Lob
-//	@Column(name = "image", columnDefinition = "LONGBLOB")
-//	private byte[] image; 
-	
-	
 	  @Column(length = 255)
 	 private String imagePath; 
 
@@ -76,4 +71,7 @@ public class PgProperty {
 	
 	@OneToMany(mappedBy = "pgProperty", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	List<Review> reviewss = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "pgProperty", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	List<Booking> bookings = new ArrayList<>();
 }

@@ -149,4 +149,11 @@ public class OwnerController {
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ownerService.getRoomById(roomId));
 	}
+	
+	//GET BOOKINGS BY PGPROERTYID
+	@GetMapping("/bookings/{pgId}")
+	public ResponseEntity<?> getBookingsByPgId(@PathVariable Long pgId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ownerService.getBookingsByPgId(pgId));
+	}
 }

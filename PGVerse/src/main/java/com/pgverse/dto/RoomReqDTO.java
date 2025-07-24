@@ -1,5 +1,7 @@
 package com.pgverse.dto;
 
+import com.pgverse.entities.RoomStatus;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,7 +26,7 @@ public class RoomReqDTO {
 	@Min(value = 0, message = "Price must be 0 or more")
 	private double pricePerMonth;
 	
-	private boolean available;
+	private RoomStatus status;
 	
 	private String imagePath; 
 	

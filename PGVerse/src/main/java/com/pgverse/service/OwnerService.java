@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.pgverse.dto.ApiResponse;
+import com.pgverse.dto.BookingRespDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.OwnerRespDto;
@@ -51,4 +52,6 @@ public interface OwnerService {
 	PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId) throws IOException;
 
 	List<PgPropertyRespDTO> getPgByOwnerId(Long ownerId);
+
+	List<BookingRespDTO> getBookingsByPgId(Long pgId);
 }

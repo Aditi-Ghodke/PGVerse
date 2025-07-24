@@ -24,7 +24,7 @@ import lombok.ToString;
 @Getter
 @Setter	
 @ToString(callSuper = true)
-@EqualsAndHashCode(of = "name", callSuper = false)
+@EqualsAndHashCode(of = "reviewId", callSuper = false)
 public class Review {
 
 	@Id

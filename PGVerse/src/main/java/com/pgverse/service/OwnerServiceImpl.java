@@ -15,10 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
+import com.pgverse.dao.BookingDao;
 import com.pgverse.dao.OwnerDao;
 import com.pgverse.dao.PgPropertyDao;
 import com.pgverse.dao.RoomDao;
 import com.pgverse.dto.ApiResponse;
+import com.pgverse.dto.BookingRespDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.OwnerRespDto;
@@ -27,6 +29,7 @@ import com.pgverse.dto.PgPropertyRespDTO;
 import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.RoomRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
+import com.pgverse.entities.Booking;
 import com.pgverse.entities.Owner;
 import com.pgverse.entities.PgProperty;
 import com.pgverse.entities.PgType;
@@ -47,6 +50,7 @@ public class OwnerServiceImpl implements OwnerService{
     private final ModelMapper modelMapper;
     private final PgPropertyDao pgPropertyDao;
     private final RoomDao roomDao;
+    private final BookingDao bookingDao;
     
     //OWNER LOGIN
 	@Override
@@ -360,6 +364,48 @@ public class OwnerServiceImpl implements OwnerService{
 	    res.setOwnername(owner.getName());
 
 	    return res;
+	}
+
+
+	@Override
+	public List<BookingRespDTO> getBookingsByPgId(Long pgId) {
+		PgProperty pgProperty = pgPropertyDao.findByPgId(pgId)
+				.orElseThrow(() -> new ResourceNotFoundException("PG not found"));
+		List<Booking> bookings = bookingDao.findByRoom_Pgproperty_PgId(pgId);
+
+	    if (bookings.isEmpty()) {
+	        throw new ResourceNotFoundException("No bookings found for this PG");
+	    }
+
+	    return bookings.stream().map(booking -> {
+	        BookingRespDTO dto = modelMapper.map(booking, BookingRespDTO.class);
+
+	        // Set Room and PGProperty
+	        if (booking.getRoom() != null) {
+	            dto.setRoomId(booking.getRoom().getRoomId());
+
+	            if (booking.getRoom().getPgproperty() != null) {
+	                dto.setPgPropertId(booking.getRoom().getPgproperty().getPgId());
+	                dto.setPgPropertyName(booking.getRoom().getPgproperty().getName());
+	            }
+	        }
+
+	        // Set User
+	        if (booking.getUser() != null) {
+	            dto.setUserId(booking.getUser().getUserId());
+	            dto.setUserName(booking.getUser().getName());
+	        }
+
+	        // Set Payment
+	        if (booking.getPayment() != null) {
+	            dto.setPaymentId(booking.getPayment().getPaymentId());
+	            dto.setAmount(booking.getPayment().getAmount());
+	            dto.setPaymentStatus(booking.getPayment().getPaymentStatus());
+	            dto.setPaymentDate(booking.getPayment().getPaymentDate());
+	        }
+
+	        return dto;
+	    }).collect(Collectors.toList());
 	}
 
 
