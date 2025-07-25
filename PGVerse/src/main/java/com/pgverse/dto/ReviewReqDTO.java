@@ -25,10 +25,4 @@ public class ReviewReqDTO {
 
     @PastOrPresent(message = "Feedback date cannot be in the future")
     private Date feedbackDate;
-//
-//    @Positive(message = "User ID must be positive")
-//    private int userid;
-//
-//    @NotBlank(message = "User name cannot be blank")
-//    private String userName;
 }

@@ -11,6 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 public class PgPropertyRespDTO {
+	
 	private String name;
 	private String location;
 	private PgType pgType;
@@ -19,4 +20,5 @@ public class PgPropertyRespDTO {
 	private Long ownerid;
 	private String ownername;
 	private String imagePath;
+	
 }

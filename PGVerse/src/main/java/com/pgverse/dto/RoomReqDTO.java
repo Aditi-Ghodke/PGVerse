@@ -11,6 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RoomReqDTO {
+	
 	@NotBlank(message = "Please enter room number")
 	private String roomNumber;
 	

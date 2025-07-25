@@ -12,8 +12,12 @@ import java.util.List;
 
 
 public interface ReviewDao extends JpaRepository<Review, Long> {
+	
 	 boolean existsByUserAndPgProperty(User user, PgProperty pgProperty);
+	 
 	 Optional<Review> findByReviewId(Long reviewId);
+	 
 	 List<Review> findByUser(User user);
+	 
 	 List<Review> findByPgProperty(PgProperty pgProperty);
 }

@@ -20,6 +20,8 @@ import com.pgverse.entities.PgProperty;
 import jakarta.validation.Valid;
 
 public interface OwnerService {
+	
+	//----------OWNERS-----------
 
 	OwnerRespDto ownerLogin(LoginReqDTO dto);
 
@@ -29,15 +31,19 @@ public interface OwnerService {
 
 	OwnerRespDto updateOwner(Long id, UpdateUserDTO dto);
 	
-	//PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, Long ownerId);
-
-	//PgPropertyRespDTO updatePgProperty(Long id, PgPropertyReqDTO dto);
+	//----------PGPROPERTY-----------
+	
+	PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId) throws IOException;
 
 	PgPropertyRespDTO updatePgProperty(Long id,  MultipartFile imageFile, PgPropertyReqDTO dto);
 	
 	ApiResponse deletePgProperty(Long id);
 
 	PgPropertyRespDTO getPropertyById(Long id);
+	
+	List<PgPropertyRespDTO> getPgByOwnerId(Long ownerId);
+	
+	//----------ROOMS-----------
 
 	RoomRespDTO addRoomToPg(Long pgId,MultipartFile imageFile, RoomReqDTO roomDto);
 
@@ -49,9 +55,7 @@ public interface OwnerService {
 
 	RoomRespDTO getRoomById(Long roomId);
 
-	PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId) throws IOException;
-
-	List<PgPropertyRespDTO> getPgByOwnerId(Long ownerId);
+	//----------BOOKINGS-----------
 
 	List<BookingRespDTO> getBookingsByPgId(Long pgId);
 }

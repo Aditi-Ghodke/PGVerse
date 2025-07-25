@@ -53,8 +53,8 @@ public class Room {
 	@Enumerated(EnumType.STRING)
 	private RoomStatus status;
 	
-	 @Column(length = 255)
-	 private String imagePath; 
+	@Column(length = 255)
+	private String imagePath; 
 	
 	@OneToMany(mappedBy = "room",orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	List<Booking> bookings = new ArrayList<>();

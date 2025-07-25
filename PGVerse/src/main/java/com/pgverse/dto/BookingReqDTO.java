@@ -11,10 +11,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BookingReqDTO {
+	
 	@NotNull(message = "PLease enter Room ID")
 	private Long userId;
+	
 	@NotNull(message = "PLease enter Room ID")
 	private Long roomId;
+	
 	@NotNull(message = "Please enter PgID")
     private Long pgId;
     private LocalDate checkInDate;

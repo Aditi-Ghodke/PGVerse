@@ -26,6 +26,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 @EqualsAndHashCode(of = "paymentId", callSuper = false)
 public class Payment {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long paymentId;

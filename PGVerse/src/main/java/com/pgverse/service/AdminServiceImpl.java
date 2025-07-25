@@ -1,6 +1,6 @@
 package com.pgverse.service;
 
-import java.util.List;import java.util.stream.Collector;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -30,18 +30,18 @@ import lombok.AllArgsConstructor;
 @Transactional
 @AllArgsConstructor
 public class AdminServiceImpl implements AdminService{
+	
 	public final AdminDao adminDao;
-
     private final BCryptPasswordEncoder passwordEncoder;
 	public final UserDao userDao;
 	private final ModelMapper modelMapper;
 	private final OwnerDao ownerDao;
 	
-
-   
+	//----------ADMIN--------
+	
 	//ADMIN LOGIN
 	@Override
-	public AdminRespDTO loginAdmin(LoginReqDTO dto) {
+	public AdminRespDTO adminLogin(LoginReqDTO dto) {
 	 Admin admin = adminDao.findByEmail(dto.getEmail())
 				.orElseThrow(() -> new ApiException("User not found"));
 	 if(!dto.getPassword().equals(admin.getPassword())) {
@@ -50,12 +50,14 @@ public class AdminServiceImpl implements AdminService{
 		return modelMapper.map(admin, AdminRespDTO.class);
 	}
 	
+	//----------USERS-----------
+	
 	//GET ALL USERS
 	@Override
 	public List<UserRespDto> getAllUsers() {
 		List<User> users = userDao.findAll();
 		
-		if(!users.isEmpty()) {
+		if(users.isEmpty()) {
 			throw new ResourceNotFoundException("No tenants found.");
 		}
 		return users.stream()
@@ -65,12 +67,14 @@ public class AdminServiceImpl implements AdminService{
 
 	//GET USERS BY ID
 	@Override
-	public UserRespDto getUserById(Long id) {
-		return userDao.findByUserId(id)
+	public UserRespDto getUserById(Long userId) {
+		return userDao.findByUserId(userId)
 				.map(user->modelMapper.map(user, UserRespDto.class))
 				.orElseThrow(()->new ApiException("Tenant Not Found!"));
 	}
 
+	//----------OWNERS-----------
+	
 	//ADD OWNER
 	@Override
 	public OwnerRespDto addOwner(OwnerReqDto dto) {
@@ -101,25 +105,18 @@ public class AdminServiceImpl implements AdminService{
 
 	//GET OWNER BY ID
 	@Override
-	public OwnerRespDto getOwnerById(Long id) {
-		return ownerDao.findByOwnerId(id)
+	public OwnerRespDto getOwnerById(Long ownerId) {
+		return ownerDao.findByOwnerId(ownerId)
 				.map(owner->modelMapper.map(owner, OwnerRespDto.class))
 				.orElseThrow(()->new ApiException("Owner Not Found!"));
 	}
 
 	//DELETE OWNER
 	@Override
-	public ApiResponse deleteOwner(Long id) {
-		Owner owner = ownerDao.findByOwnerId(id)
+	public ApiResponse deleteOwner(Long ownerId) {
+		Owner owner = ownerDao.findByOwnerId(ownerId)
 				.orElseThrow(()->new ResourceNotFoundException("Owner Not Found!"));
 		ownerDao.delete(owner);
-		return new ApiResponse("Owner Deleted Successfully!");
-	
-		
+		return new ApiResponse("Owner Deleted Successfully!");	
 	}
-	
-	
-	
-	
-
 }

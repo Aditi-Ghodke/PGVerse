@@ -10,6 +10,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 public class ReviewRespDTO {
+	
 	private int rating;
 	private String comment;
 	private Date feedbackDate;
@@ -17,4 +18,5 @@ public class ReviewRespDTO {
 	private String userName;
 	private Long pgPropertyid;
 	private String pgPropertyName;
+	
 }

@@ -11,7 +11,8 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = false)
 public class PaymentReqDTO {
-	 @NotNull(message = "Please enter amount")
+	
+	@NotNull(message = "Please enter amount")
 	private double amount;
 	private PaymentStatus paymentStatus = PaymentStatus.SUCCESS;
 }

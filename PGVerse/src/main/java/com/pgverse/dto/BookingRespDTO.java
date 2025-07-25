@@ -24,7 +24,6 @@ public class BookingRespDTO {
 	private Long pgPropertId;
 	private String pgPropertyName;
 	
-	
 	private Long userId;
 	private String userName;
 	

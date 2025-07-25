@@ -26,7 +26,7 @@ import lombok.ToString;
 @Getter
 @Setter	
 @ToString(callSuper = true)
-@EqualsAndHashCode(of = "name", callSuper = false)
+@EqualsAndHashCode(of = "userId", callSuper = false)
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

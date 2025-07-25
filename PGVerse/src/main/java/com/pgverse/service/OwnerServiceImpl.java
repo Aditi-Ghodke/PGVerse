@@ -52,6 +52,8 @@ public class OwnerServiceImpl implements OwnerService{
     private final RoomDao roomDao;
     private final BookingDao bookingDao;
     
+  //----------OWNERS-----------
+    
     //OWNER LOGIN
 	@Override
 	public OwnerRespDto ownerLogin(LoginReqDTO dto) {
@@ -65,7 +67,6 @@ public class OwnerServiceImpl implements OwnerService{
 		return modelMapper.map(owner,OwnerRespDto.class);
 	}
 
-	
 	//GET OWNER BY ID
 	@Override
 	public OwnerRespDto getAllOwnerById(Long id) {
@@ -74,7 +75,6 @@ public class OwnerServiceImpl implements OwnerService{
 				.orElseThrow(()-> new ApiException("Owner Not Found!"));
 			
 	}
-
 	
 	//CHANGE OWNER PASSWORD
 	@Override
@@ -91,7 +91,6 @@ public class OwnerServiceImpl implements OwnerService{
 		return "Password updated successfully";
 	}
 
-	
 	//UPDATE OWNER
 	@Override
 	public OwnerRespDto updateOwner(Long id, UpdateUserDTO dto) {
@@ -102,6 +101,44 @@ public class OwnerServiceImpl implements OwnerService{
 		
 		return modelMapper.map(owner, OwnerRespDto.class);
 	}
+	
+	
+	//----------PGPROPERTY-----------
+	
+	
+	//ADD PGPROPERTY
+		@Override
+		public PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId)
+		        throws IOException {
+
+		    String uploadDir = "uploads/images/pg_property/";
+		    File dir = new File(uploadDir);
+		    if (!dir.exists()) dir.mkdirs();
+
+		    String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+		    Path filePath = Paths.get(uploadDir + fileName);
+		    Files.write(filePath, imageFile.getBytes());
+
+		    Owner owner = ownerDao.findByOwnerId(ownerId)
+		            .orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
+
+		    PgProperty pg = modelMapper.map(dto, PgProperty.class);
+		    pg.setStatus(Status.AVAILABLE);
+		    pg.setPgType(PgType.GIRLS);
+		    pg.setOwner(owner);
+		    
+		    pg.setImagePath(uploadDir + fileName);
+
+		    
+		    PgProperty savedPg = pgPropertyDao.save(pg);
+
+		   
+		    PgPropertyRespDTO res = modelMapper.map(savedPg, PgPropertyRespDTO.class);
+		    res.setOwnerid(owner.getOwnerId());
+		    res.setOwnername(owner.getName());
+
+		    return res;
+		}
 	
 	//UPDATE PROPERTY
 	@Override
@@ -169,10 +206,10 @@ public class OwnerServiceImpl implements OwnerService{
 		return new ApiResponse("PG Deleted Successfully!");
 	}
 
-
+	//GET PGPROPERTYBYID
 	@Override
-	public PgPropertyRespDTO getPropertyById(Long id) {
-		PgProperty pgproperty = pgPropertyDao.findByPgId(id)
+	public PgPropertyRespDTO getPropertyById(Long pgId) {
+		PgProperty pgproperty = pgPropertyDao.findByPgId(pgId)
 				.orElseThrow(()-> new ResourceNotFoundException("Pg not found!"));
 		PgPropertyRespDTO pgpropertydto = modelMapper.map(pgproperty, PgPropertyRespDTO.class);
 		pgpropertydto.setOwnerid(pgproperty.getOwner().getOwnerId());
@@ -201,8 +238,10 @@ public class OwnerServiceImpl implements OwnerService{
 		
 	
 	}
+	
+	//----------ROOMS-----------
 
-
+	//ADD ADD ROOM TO PGPROPERTY
 	@Override
 	public RoomRespDTO addRoomToPg(Long pgId,MultipartFile imageFile, @Valid RoomReqDTO roomDto) {
 		PgProperty pg = pgPropertyDao.findByPgId(pgId)
@@ -243,6 +282,7 @@ public class OwnerServiceImpl implements OwnerService{
 	}
 
 
+	//UPDATE ROOM BY ROOMID
 	@Override
 	public RoomRespDTO updateRoom(Long roomId, MultipartFile imageFile, RoomReqDTO roomDto) {
 		
@@ -333,40 +373,8 @@ public class OwnerServiceImpl implements OwnerService{
 		return dto;
 	}
 
-	@Override
-	public PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId)
-	        throws IOException {
-
-	    String uploadDir = "uploads/images/pg_property/";
-	    File dir = new File(uploadDir);
-	    if (!dir.exists()) dir.mkdirs();
-
-	    String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-	    Path filePath = Paths.get(uploadDir + fileName);
-	    Files.write(filePath, imageFile.getBytes());
-
-	    Owner owner = ownerDao.findByOwnerId(ownerId)
-	            .orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
-
-	    PgProperty pg = modelMapper.map(dto, PgProperty.class);
-	    pg.setStatus(Status.AVAILABLE);
-	    pg.setPgType(PgType.GIRLS);
-	    pg.setOwner(owner);
-	    
-	    pg.setImagePath(uploadDir + fileName);
-
-	    
-	    PgProperty savedPg = pgPropertyDao.save(pg);
-
-	   
-	    PgPropertyRespDTO res = modelMapper.map(savedPg, PgPropertyRespDTO.class);
-	    res.setOwnerid(owner.getOwnerId());
-	    res.setOwnername(owner.getName());
-
-	    return res;
-	}
-
-
+	//----------BOOKINGS-----------
+	
 	@Override
 	public List<BookingRespDTO> getBookingsByPgId(Long pgId) {
 		PgProperty pgProperty = pgPropertyDao.findByPgId(pgId)
@@ -407,7 +415,4 @@ public class OwnerServiceImpl implements OwnerService{
 	        return dto;
 	    }).collect(Collectors.toList());
 	}
-
-
-
 }

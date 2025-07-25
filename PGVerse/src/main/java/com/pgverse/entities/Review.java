@@ -46,4 +46,5 @@ public class Review {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "pg_id", nullable = false)
 	private PgProperty pgProperty;
+	
 }

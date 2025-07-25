@@ -20,17 +20,22 @@ import lombok.ToString;
 @Getter
 @Setter	
 @ToString(callSuper = true)
-@EqualsAndHashCode(of = "name", callSuper = false)
+@EqualsAndHashCode(of = "adminId", callSuper = false)
 public class Admin {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long adminId;
+	
 	@Column(name = "admin_name", length = 20)
 	private String name;
+	
 	@Column(length = 30, unique = true)
 	private String email;
+	
 	@Column(length = 200, nullable = false)
 	private String password;
+	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
 	private Role role = Role.ADMIN;

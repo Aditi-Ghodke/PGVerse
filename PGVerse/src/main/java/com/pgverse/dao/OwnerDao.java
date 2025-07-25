@@ -9,6 +9,8 @@ import java.util.List;
 
 
 public interface OwnerDao extends JpaRepository<Owner, Long>{
+	
 	Optional<Owner> findByEmail(String email);
+	
 	Optional<Owner> findByOwnerId(Long ownerId);
 }

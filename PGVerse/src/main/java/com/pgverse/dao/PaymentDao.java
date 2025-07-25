@@ -11,6 +11,7 @@ import com.pgverse.entities.Booking;
 
 
 public interface PaymentDao extends JpaRepository<Payment, Long>{
+	
 	boolean existsByBooking_UserAndBooking_BookingDate(
 			User user, LocalDate bookingDate);
 	

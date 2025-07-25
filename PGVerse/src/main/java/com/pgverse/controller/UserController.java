@@ -38,7 +38,7 @@ public class UserController {
 	
 	//USER REGISTERATION
 	@PostMapping("/register")
-	public ResponseEntity<?> userRregisteration(@RequestBody @Valid UserReqDto dto){
+	public ResponseEntity<?> userRegisteration(@RequestBody @Valid UserReqDto dto){
 		
 			return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(dto));
 		
@@ -46,28 +46,28 @@ public class UserController {
 	
 	//USER LOGIN
 	@PostMapping("/login")
-	public ResponseEntity<?> loginUser(@RequestBody LoginReqDTO dto) {
+	public ResponseEntity<?> userLogin(@RequestBody LoginReqDTO dto) {
 		return ResponseEntity.ok(userService.loginUser(dto));
 	}
 	
 	//CHANGE PASSWORD
-	@PostMapping("/change-password")
+	@PutMapping("/changePassword")
 	public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO dto){
 		return ResponseEntity.ok(userService.changePassword(dto));
 	}
 	
 	//GET USER BY ID
-	@GetMapping("/{id}")
-	public ResponseEntity<?> getUserById(@PathVariable Long id){
+	@GetMapping("/{userId}")
+	public ResponseEntity<?> getUserById(@PathVariable Long userId){
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(userService.getUserById(id));
+				.body(userService.getUserById(userId));
 	}
 	
 	//UPDATE USER
-	@PutMapping("/{id}")
-	public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UpdateUserDTO dto){
+	@PutMapping("/{userId}")
+	public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody UpdateUserDTO dto){
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(userService.updateUserDetails(id,dto));
+				.body(userService.updateUserDetails(userId,dto));
 	}
 	
 	
@@ -89,6 +89,7 @@ public class UserController {
 		
 	}
 	
+	//-----------REVIEWS--------
 	
 	//UPDATE
 	@PutMapping("/reviews/{reviewId}")

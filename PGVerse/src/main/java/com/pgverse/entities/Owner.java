@@ -27,7 +27,7 @@ import lombok.ToString;
 @Getter
 @Setter	
 @ToString(callSuper = true, exclude = "pg")
-@EqualsAndHashCode(of = "name", callSuper = false)
+@EqualsAndHashCode(of = "ownerId", callSuper = false)
 public class Owner {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

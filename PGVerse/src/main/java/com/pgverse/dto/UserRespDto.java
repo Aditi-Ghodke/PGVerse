@@ -1,6 +1,5 @@
 package com.pgverse.dto;
 
-import com.pgverse.entities.AadharCard;
 import com.pgverse.entities.Role;
 
 import lombok.Getter;
@@ -11,6 +10,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 public class UserRespDto {
+	
 	private String name;
 	private String email;
 	private String phone;

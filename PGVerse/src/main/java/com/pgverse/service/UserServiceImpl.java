@@ -17,10 +17,10 @@ import com.pgverse.dao.PgPropertyDao;
 import com.pgverse.dao.ReviewDao;
 import com.pgverse.dao.RoomDao;
 import com.pgverse.dao.UserDao;
+import com.pgverse.dto.AddBookingResDTO;
 import com.pgverse.dto.ApiResponse;
 import com.pgverse.dto.BookingReqDTO;
 import com.pgverse.dto.BookingRespDTO;
-import com.pgverse.dto.BookingUpdateReqDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.PaymentReqDTO;
@@ -56,7 +56,11 @@ public class UserServiceImpl implements UserService{
     private final RoomDao roomDao;
     private final BookingDao bookingDao;
     private final PaymentDao paymentDao;
+    
+    //-----------USER-------------
 	
+    
+    //REGISTER USER
 	@Override
 	public UserRespDto registerUser(UserReqDto dto) {
 		//check duplicate email
@@ -69,6 +73,7 @@ public class UserServiceImpl implements UserService{
 		return modelMapper.map(userDao.save(entity), UserRespDto.class);
 	}
 
+	//USER SIGNIN
 	@Override
 	public UserRespDto loginUser(LoginReqDTO loginDto) {
 		User user = userDao.findByEmail(loginDto.getEmail())
@@ -80,6 +85,7 @@ public class UserServiceImpl implements UserService{
 		 return modelMapper.map(user, UserRespDto.class);
 	}
 
+	//USER -> CHANGEPASSWORD
 	@Override
 	public String changePassword(ChangePasswordDTO dto) {
 		User user = userDao.findByEmail(dto.getEmail())
@@ -97,34 +103,51 @@ public class UserServiceImpl implements UserService{
 
 	    return "Password updated successfully";
 	}
-
+	
+	//GET USER BY USERID
 	@Override
-	public UserRespDto getUserById(Long id) {
+	public UserRespDto getUserById(Long userId) {
 
-		return userDao.findByUserId(id)
+		return userDao.findByUserId(userId)
 				.map(user->modelMapper.map(user, UserRespDto.class))
 				.orElseThrow(()->new ApiException("User Not Found!"));
 	}
 
+	//UPDATE USER DETAILS
 	@Override
-	public UserRespDto updateUserDetails(Long id, UpdateUserDTO dto) {
-		User user = userDao.findByUserId(id)
-				.orElseThrow(()->new ResourceNotFoundException("User Not Found!"));
-		modelMapper.map(dto, user);
-		userDao.save(user);
-				
-		return modelMapper.map(user,UserRespDto.class);
+	public UserRespDto updateUserDetails(Long userId, UpdateUserDTO dto) {
+		
+		 User user = userDao.findByUserId(userId)
+		            .orElseThrow(() -> new ResourceNotFoundException("User Not Found!"));
+
+		    modelMapper.map(dto, user);
+
+		    userDao.save(user);
+
+		    UserRespDto response = new UserRespDto();
+		    response.setName(user.getName());
+		    response.setEmail(user.getEmail());
+		    response.setPhone(user.getPhone());
+		    response.setGender(user.getGender());
+		    response.setAddress(user.getAddress());
+		    response.setCard(user.getCard());
+		    response.setRole(user.getRole());
+
+		    return response;
 	}
 
+	//DELETE USER BY USERID
 	@Override
-	public ApiResponse deleteUser(Long id) {
-		User user = userDao.findByUserId(id)
+	public ApiResponse deleteUser(Long userId) {
+		User user = userDao.findByUserId(userId)
 				.orElseThrow(()->new ResourceNotFoundException("User Not Found!"));
 		userDao.delete(user);
 		return new ApiResponse("User Deleted Successfully!");
 	}
 
-	//-------REVIEW
+	
+	//-------REVIEW-----------
+	
 	
 	//GIVE REVIEW
 	@Override
@@ -200,7 +223,7 @@ public class UserServiceImpl implements UserService{
 		}).collect(Collectors.toList());
 	}
 
-	//DELETE
+	//DELETE REVIEW BY REVIEWID
 	@Override
 	public ApiResponse deleteReview(Long reviewId) {
 		Review review = reviewDao.findById(reviewId)
@@ -208,12 +231,11 @@ public class UserServiceImpl implements UserService{
 		reviewDao.delete(review);
 		return new ApiResponse("Review deleted successfully");
 	}
-
-	
 	
 	//---------BOOKING----------
+	
 	//CREATE BOOKING
-	public BookingRespDTO createBooking(BookingReqDTO dto) {
+	public AddBookingResDTO createBooking(BookingReqDTO dto) {
         User user = userDao.findByUserId(dto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -240,7 +262,6 @@ public class UserServiceImpl implements UserService{
         booking.setUser(user);
         booking.setRoom(room);
         booking.setPgProperty(pgProperty);
-        //booking.setStatus(dto.getStatus() != null ? dto.getStatus() );
         booking.setStatus(dto.getStatus() != null ? dto.getStatus() : BookingStatus.CONFIRMED);
         booking.setBookingDate(LocalDate.now());
         booking.setCheckInDate(dto.getCheckInDate());
@@ -248,8 +269,9 @@ public class UserServiceImpl implements UserService{
 
         Booking savedBooking = bookingDao.save(booking);
 
-        // Map to response DTO, payment fields empty for now
-        BookingRespDTO respDto = modelMapper.map(savedBooking, BookingRespDTO.class);
+        // Map to response DTO
+        
+        AddBookingResDTO respDto = modelMapper.map(savedBooking, AddBookingResDTO.class);
         respDto.setRoomId(savedBooking.getRoom().getRoomId());
         respDto.setPgPropertId(savedBooking.getPgProperty().getPgId());
         respDto.setPgPropertyName(savedBooking.getPgProperty().getName());
@@ -262,7 +284,7 @@ public class UserServiceImpl implements UserService{
     }
 	
 	
-	 // 2. Create Payment linked to existing Booking
+	 //MAKE PAYMENT FOR EXISTING BOOKING
     public BookingRespDTO makePayment(Long bookingId, PaymentReqDTO paymentDTO) {
         Booking booking = bookingDao.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
@@ -270,10 +292,8 @@ public class UserServiceImpl implements UserService{
         if(booking.getPayment() != null) {
             throw new ApiException("Payment already exists for this booking");
         }
-
         
         //CHECK PRICE
-        
         Room room = booking.getRoom();
         double expectedAmount = room.getPricePerMonth();
         
@@ -292,7 +312,7 @@ public class UserServiceImpl implements UserService{
         booking.setPayment(savedPayment);
         bookingDao.save(booking);
 
-        // Map to BookingRespDTO including payment info
+        //Map to BookingRespDTO including payment info
         BookingRespDTO respDto = modelMapper.map(booking, BookingRespDTO.class);
         respDto.setRoomId(booking.getRoom().getRoomId());
         respDto.setPgPropertId(booking.getPgProperty().getPgId());
@@ -300,6 +320,7 @@ public class UserServiceImpl implements UserService{
         respDto.setUserId(booking.getUser().getUserId());
         respDto.setUserName(booking.getUser().getName());
 
+        //Payment info
         respDto.setPaymentId(savedPayment.getPaymentId());
         respDto.setAmount(savedPayment.getAmount());
         respDto.setPaymentStatus(savedPayment.getPaymentStatus());
@@ -353,7 +374,7 @@ public class UserServiceImpl implements UserService{
 
 
 
-
+	//CANCEL BOOKING USING USERID AND BOOKINGID
 	@Override
 	public BookingRespDTO cancelBookingsByUserId(Long userId, Long bookingId) {
 		 User user = userDao.findByUserId(userId)
@@ -396,7 +417,7 @@ public class UserServiceImpl implements UserService{
 		    return dto;
 	}
 
-	
+	//GET BOOKING BY BOOKINGID
 	@Override
 	public BookingRespDTO getBookingById(Long bookingId) {
 	    Booking booking = bookingDao.findById(bookingId)

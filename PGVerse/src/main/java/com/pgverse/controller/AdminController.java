@@ -27,8 +27,8 @@ public class AdminController {
 	
 	//ADMIN LOGIN
 	@PostMapping("/login")
-	public ResponseEntity<?> loginUser(@RequestBody LoginReqDTO dto) {
-		return ResponseEntity.ok(adminService.loginAdmin(dto));
+	public ResponseEntity<?> adminLogin(@RequestBody LoginReqDTO dto) {
+		return ResponseEntity.ok(adminService.adminLogin(dto));
 	}
 	
 	//GET ALL USERS
@@ -39,10 +39,10 @@ public class AdminController {
 	}
 	
 	//GET USER BY ID
-	@GetMapping("/users/{id}")
-	public ResponseEntity<?> getUserById(@PathVariable Long id){
+	@GetMapping("/users/{userId}")
+	public ResponseEntity<?> getUserById(@PathVariable Long userId){
 		return ResponseEntity.status(HttpStatus.OK)
-				.body(adminService.getUserById(id));
+				.body(adminService.getUserById(userId));
 	}
 	
 	

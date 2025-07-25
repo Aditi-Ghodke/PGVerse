@@ -16,6 +16,10 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 	
 	boolean existsByRoom(Room room);
 	
+	List<Booking> findByUserUserId(Long userId);
+	
+	List<Booking> findByRoom_Pgproperty_PgId(Long pgId);
+	
 	@Query("""
 		    SELECT COUNT(b) > 0 FROM Booking b
 		    WHERE b.room = :room
@@ -26,9 +30,5 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 		                     @Param("checkInDate") LocalDate checkInDate,
 		                     @Param("checkOutDate") LocalDate checkOutDate,
 		                     @Param("status") BookingStatus status);
-
-
-	List<Booking> findByUserUserId(Long userId);
-	List<Booking> findByRoom_Pgproperty_PgId(Long pgId);
 	
 }

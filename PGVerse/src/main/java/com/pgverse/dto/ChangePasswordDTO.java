@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChangePasswordDTO {
-	 @NotBlank
+	 	@NotBlank
 	    private String email;
 
 	    @NotBlank
