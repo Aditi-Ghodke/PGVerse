@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +40,11 @@ import com.pgverse.entities.Role;
 import com.pgverse.entities.Room;
 import com.pgverse.entities.RoomStatus;
 import com.pgverse.entities.User;
+import com.pgverse.security.JwtService;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+
 
 @Service
 @Transactional
@@ -56,6 +59,8 @@ public class UserServiceImpl implements UserService{
     private final RoomDao roomDao;
     private final BookingDao bookingDao;
     private final PaymentDao paymentDao;
+//    private final JwtService jwtService;
+//    private final AuthenticationManager authenticationManager;
     
     //-----------USER-------------
 	
@@ -85,6 +90,19 @@ public class UserServiceImpl implements UserService{
 		 return modelMapper.map(user, UserRespDto.class);
 	}
 
+//	@Override
+//	public LoginRespDTO loginUser(LoginReqDTO loginDto) {
+//		Authentication auth = authenticationManager.authenticate(
+//		        new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
+//		    );
+//
+//		    UserDetails userDetails = (UserDetails) auth.getPrincipal();
+//		    String token = jwtService.generateToken(userDetails);
+//
+//		    return new LoginRespDTO(token);
+//	}
+
+	
 	//USER -> CHANGEPASSWORD
 	@Override
 	public String changePassword(ChangePasswordDTO dto) {
@@ -244,6 +262,11 @@ public class UserServiceImpl implements UserService{
 
         PgProperty pgProperty = pgPropertyDao.findByPgId(dto.getPgId())
                 .orElseThrow(() -> new ResourceNotFoundException("PG not found"));
+        
+        //Check if room belongs to the selected PG
+        if (!room.getPgproperty().getPgId().equals(dto.getPgId())) {
+            throw new ApiException("Selected room does not belong to the specified PG property");
+        }
         LocalDate today = LocalDate.now();
         
         if (dto.getCheckInDate().isBefore(today)) {
@@ -451,5 +474,7 @@ public class UserServiceImpl implements UserService{
 
 	    return dto;
 	}
+
+	
 
 }

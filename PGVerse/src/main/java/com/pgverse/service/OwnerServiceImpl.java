@@ -158,7 +158,7 @@ public class OwnerServiceImpl implements OwnerService{
 		            }
 
 		            // Save new image
-		            String uploadDir = "uploads/images/";
+		            String uploadDir = "uploads/images/pg_property/";
 		            File dir = new File(uploadDir);
 		            if (!dir.exists()) dir.mkdirs();
 
@@ -296,19 +296,19 @@ public class OwnerServiceImpl implements OwnerService{
 		       
 		        String oldImagePath = room.getImagePath();
 		        if (oldImagePath != null) {
-		            File oldFile = new File(oldImagePath);
-		            if (oldFile.exists()) oldFile.delete();
-		        }
+	                File oldFile = new File(System.getProperty("user.dir") + "/uploads/images/rooms/" + oldImagePath);
+	                if (oldFile.exists()) oldFile.delete();
+	            }
 
 		       
-		        String uploadDir = "uploads/rooms/";
-		        File dir = new File(uploadDir);
-		        if (!dir.exists()) dir.mkdirs();
+		        String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
 
 		        
-		        String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-		        Path filePath = Paths.get(uploadDir + fileName);
-		        Files.write(filePath, imageFile.getBytes());
+	            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+	            Path filePath = Paths.get(uploadDir, fileName);
+	            Files.write(filePath, imageFile.getBytes());
 
 		    
 		        room.setImagePath(uploadDir + fileName);

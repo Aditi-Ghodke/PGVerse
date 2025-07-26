@@ -36,6 +36,9 @@ public class OwnerController {
 
 	public final OwnerService ownerService;
 	public final PgPropertyService pgPropertyService;
+	
+	//--------OWNER---------
+	
 	//OWNER LOGIN
 	@PostMapping("/login")
 	public ResponseEntity<?> ownerLogin(@RequestBody LoginReqDTO dto){
@@ -62,6 +65,7 @@ public class OwnerController {
 				.body(ownerService.updateOwner(ownerId,dto));
 	}
 	
+	//--------PGPROPERTY---------
 	
 	@PostMapping("/pgproperty/{ownerId}")
 	public ResponseEntity<?> addPgProperty(
@@ -76,7 +80,7 @@ public class OwnerController {
 	    }
 	}
 	
-	//UPDATE PGPROPERTY WITH IMAGE
+	//UPDATE PGPROPERTY
 	@PutMapping("/pgproperty/{pgId}")
 	public ResponseEntity<?> updatePgProperty(
 			@ModelAttribute PgPropertyReqDTO dto,
@@ -106,6 +110,10 @@ public class OwnerController {
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ownerService.getPgByOwnerId(ownerId));
 	}
+	
+	
+	//--------ROOMS---------
+	
 	
 	//ADD ROOM PER PG
 	@PostMapping("/pgproperty/{pgId}/rooms")

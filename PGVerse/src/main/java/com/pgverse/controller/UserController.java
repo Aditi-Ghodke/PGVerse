@@ -78,7 +78,7 @@ public class UserController {
 				.body(userService.deleteUser(id));
 	}
 	
-	//----------REVIEW
+	//-----------REVIEWS--------
 	
 	//ADD REVIEW
 	@PostMapping("/reviews/{pgId}/{userId}")
@@ -88,8 +88,6 @@ public class UserController {
 					.body(userService.giveReview(dto, pgId, userId));
 		
 	}
-	
-	//-----------REVIEWS--------
 	
 	//UPDATE
 	@PutMapping("/reviews/{reviewId}")
@@ -122,7 +120,9 @@ public class UserController {
 	}
 	
 	
-	//---------BOOKING
+	//---------BOOKING-----------
+	
+	
 	//MAKE BOOKING
 	@PostMapping("/bookings/")
 	public ResponseEntity<?> makeBooking(@Valid @RequestBody BookingReqDTO dto){

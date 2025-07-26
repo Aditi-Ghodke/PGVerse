@@ -8,6 +8,7 @@ import com.pgverse.dto.BookingReqDTO;
 import com.pgverse.dto.BookingRespDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
+import com.pgverse.dto.LoginRespDTO;
 import com.pgverse.dto.PaymentReqDTO;
 import com.pgverse.dto.ReviewReqDTO;
 import com.pgverse.dto.ReviewRespDTO;
