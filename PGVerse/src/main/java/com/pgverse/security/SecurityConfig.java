@@ -78,7 +78,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()  // allow /auth/login without authentication
+                .requestMatchers("/auth/**").permitAll()  
+                .requestMatchers("/users/register").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/users/**").hasRole("USER")
                 .requestMatchers("/owners/**").hasRole("OWNER")

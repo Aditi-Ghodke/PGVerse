@@ -15,13 +15,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.pgverse.dto.AddServiceDTO;
+import com.pgverse.dto.RequestServiceDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.PgPropertyReqDTO;
 import com.pgverse.dto.PgPropertyRespDTO;
 import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.UpdateUserDTO;
-import com.pgverse.entities.PgProperty;
 import com.pgverse.service.OwnerService;
 import com.pgverse.service.PgPropertyService;
 
@@ -163,5 +164,20 @@ public class OwnerController {
 	public ResponseEntity<?> getBookingsByPgId(@PathVariable Long pgId){
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ownerService.getBookingsByPgId(pgId));
+	}
+	
+	//--------SERVICES---------
+	
+	@PostMapping("/services/{ownerId}/add-service")
+	public ResponseEntity<?> addService(@PathVariable Long ownerId, @RequestBody @Valid AddServiceDTO  dto) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(ownerService.addService(ownerId,dto));
+	}
+	
+	//GET SERVICES BY PG ID
+	@GetMapping("/services/{pgId}")
+	public ResponseEntity<?> getServicesById(@PathVariable Long pgId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ownerService.getServicesById(pgId));
 	}
 }

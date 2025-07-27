@@ -63,4 +63,7 @@ public class Room {
 	@JoinColumn(name = "pgproperty_id", nullable = false)
 	private PgProperty pgproperty;
 	
+	@OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<PgService> services = new ArrayList<>();
+	
 }

@@ -12,12 +12,12 @@ import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.OwnerRespDto;
 import com.pgverse.dto.PgPropertyReqDTO;
 import com.pgverse.dto.PgPropertyRespDTO;
+import com.pgverse.dto.RequestedServiceResponseDTO;
+import com.pgverse.dto.AddServiceDTO;
 import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.RoomRespDTO;
+import com.pgverse.dto.AddedServiceResponseDTO;
 import com.pgverse.dto.UpdateUserDTO;
-import com.pgverse.entities.PgProperty;
-
-import jakarta.validation.Valid;
 
 public interface OwnerService {
 	
@@ -58,4 +58,8 @@ public interface OwnerService {
 	//----------BOOKINGS-----------
 
 	List<BookingRespDTO> getBookingsByPgId(Long pgId);
+
+	AddedServiceResponseDTO addService(Long ownerId, AddServiceDTO dto);
+
+	List<RequestedServiceResponseDTO> getServicesById(Long pgId);
 }

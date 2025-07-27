@@ -20,6 +20,7 @@ import com.pgverse.dto.BookingUpdateReqDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.PaymentReqDTO;
+import com.pgverse.dto.RequestServiceDTO;
 import com.pgverse.dto.ReviewReqDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.dto.UserReqDto;
@@ -124,7 +125,7 @@ public class UserController {
 	
 	
 	//MAKE BOOKING
-	@PostMapping("/bookings/")
+	@PostMapping("/bookings")
 	public ResponseEntity<?> makeBooking(@Valid @RequestBody BookingReqDTO dto){
 		return ResponseEntity.ok(userService.createBooking(dto));
 	}
@@ -158,4 +159,15 @@ public class UserController {
 	    return ResponseEntity.status(HttpStatus.OK)
 	    		.body(userService.cancelBookingsByUserId(userId,  bookingId));
 	}
+	
+	//--------SERVICES---------
+	
+	//REQUEST SERVICE
+	@PostMapping("/services/request-service")
+	public ResponseEntity<?> requestService(@RequestBody @Valid RequestServiceDTO dto){
+			return ResponseEntity.status(HttpStatus.CREATED)
+					.body(userService.requestService(dto));
+		
+	}
+	
 }

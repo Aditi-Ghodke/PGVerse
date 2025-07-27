@@ -2,6 +2,7 @@ package com.pgverse.dao;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,5 +31,8 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 		                     @Param("checkInDate") LocalDate checkInDate,
 		                     @Param("checkOutDate") LocalDate checkOutDate,
 		                     @Param("status") BookingStatus status);
+	
+	Optional<Booking> findByUserUserIdAndRoomRoomIdAndPgPropertyPgIdAndStatusNot(
+	        Long userId, Long roomId, Long pgId, BookingStatus cancelledStatus);
 	
 }

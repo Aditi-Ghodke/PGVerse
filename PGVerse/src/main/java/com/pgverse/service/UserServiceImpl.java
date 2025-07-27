@@ -3,10 +3,10 @@ package com.pgverse.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +15,11 @@ import com.pgverse.custom_exceptions.ResourceNotFoundException;
 import com.pgverse.dao.BookingDao;
 import com.pgverse.dao.PaymentDao;
 import com.pgverse.dao.PgPropertyDao;
+import com.pgverse.dao.PgServiceDao;
 import com.pgverse.dao.ReviewDao;
 import com.pgverse.dao.RoomDao;
 import com.pgverse.dao.UserDao;
+import com.pgverse.dao.UserServiceRequestDao;
 import com.pgverse.dto.AddBookingResDTO;
 import com.pgverse.dto.ApiResponse;
 import com.pgverse.dto.BookingReqDTO;
@@ -25,6 +27,8 @@ import com.pgverse.dto.BookingRespDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.PaymentReqDTO;
+import com.pgverse.dto.RequestServiceDTO;
+import com.pgverse.dto.RequestedServiceResponseDTO;
 import com.pgverse.dto.ReviewReqDTO;
 import com.pgverse.dto.ReviewRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
@@ -35,12 +39,14 @@ import com.pgverse.entities.BookingStatus;
 import com.pgverse.entities.Payment;
 import com.pgverse.entities.PaymentStatus;
 import com.pgverse.entities.PgProperty;
+import com.pgverse.entities.PgService;
 import com.pgverse.entities.Review;
 import com.pgverse.entities.Role;
 import com.pgverse.entities.Room;
 import com.pgverse.entities.RoomStatus;
+import com.pgverse.entities.ServiceStatus;
 import com.pgverse.entities.User;
-import com.pgverse.security.JwtService;
+import com.pgverse.entities.UserServiceRequest;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -59,6 +65,8 @@ public class UserServiceImpl implements UserService{
     private final RoomDao roomDao;
     private final BookingDao bookingDao;
     private final PaymentDao paymentDao;
+    private final PgServiceDao serviceDao;
+    private UserServiceRequestDao userServiceRequestDao;
 //    private final JwtService jwtService;
 //    private final AuthenticationManager authenticationManager;
     
@@ -281,6 +289,11 @@ public class UserServiceImpl implements UserService{
             throw new ApiException("Room is already booked for the selected dates");
         }
 	        
+        // Check room occupancy limit
+        if(room.getCurrentOccupancy()>=room.getCapacity()) {
+        	throw new ApiException("Room has reached its maximum occupancy");
+        }
+        
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setRoom(room);
@@ -292,6 +305,9 @@ public class UserServiceImpl implements UserService{
 
         Booking savedBooking = bookingDao.save(booking);
 
+        room.setCurrentOccupancy(room.getCurrentOccupancy()+1);
+        roomDao.save(room);
+        
         // Map to response DTO
         
         AddBookingResDTO respDto = modelMapper.map(savedBooking, AddBookingResDTO.class);
@@ -411,14 +427,25 @@ public class UserServiceImpl implements UserService{
 			  throw new ResourceNotFoundException("Booking does not belong to this user");
 		  }
 		  
+		  if (booking.getStatus() == BookingStatus.CANCELLED) {
+		        throw new ApiException("Booking is already cancelled");
+		   }
+		  
 		  booking.setStatus(BookingStatus.CANCELLED);
 		  
-		  if(booking.getRoom()!=null) {
-			  booking.getRoom().setStatus(RoomStatus.AVAILABLE);	
-			  roomDao.save(booking.getRoom());
+		  Room room = booking.getRoom();
+		  if(room !=null) {
+			  room.setStatus(RoomStatus.AVAILABLE);	
+			  if(room.getCurrentOccupancy()>0) {
+				  room.setCurrentOccupancy(room.getCurrentOccupancy()-1);
 			  }
+			  roomDao.save(room);
+		 }
 		    
 		  bookingDao.save(booking);
+		  
+		  
+		  
 		  
 		  BookingRespDTO dto = modelMapper.map(booking, BookingRespDTO.class);
 		    dto.setUserId(user.getUserId());
@@ -475,6 +502,60 @@ public class UserServiceImpl implements UserService{
 	    return dto;
 	}
 
-	
+	@Override
+	public RequestedServiceResponseDTO requestService(RequestServiceDTO dto) {
+		
+		User user = userDao.findById(dto.getUserId())
+	            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+	    PgService service = serviceDao.findById(dto.getServiceId())
+	            .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
+
+	    PgProperty pg = pgPropertyDao.findById(dto.getPgId())
+	            .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+	    
+	    Room room = roomDao.findById(dto.getRoomId())
+	            .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+	    
+	    if (!room.getPgproperty().getPgId().equals(pg.getPgId())) {
+	        throw new ApiException("This room does not belong to the specified PG.");
+	    }
+	    
+	 // Check if user has a valid booking for the given room and PG (not cancelled)
+	    Optional<Booking> bookingOpt = bookingDao.findByUserUserIdAndRoomRoomIdAndPgPropertyPgIdAndStatusNot(
+	        user.getUserId(), room.getRoomId(), pg.getPgId(), BookingStatus.CANCELLED);
+
+	    if (bookingOpt.isEmpty()) {
+	        throw new ApiException("User does not have a valid booking for this room and PG.");
+	    }
+	    
+
+	  UserServiceRequest req = modelMapper.map(dto, UserServiceRequest.class);
+	  req.setUser(user);
+	  req.setService(service);
+	  req.setPgProperty(pg);
+	  req.setStatus(ServiceStatus.REQUESTED);
+	  req.setRequestDate(LocalDate.now());
+	  
+
+	  UserServiceRequest saved  = userServiceRequestDao.save(req);
+	  
+	  RequestedServiceResponseDTO respDto = modelMapper.map(saved, RequestedServiceResponseDTO.class);
+	
+	  respDto.setUserId(saved.getUser().getUserId());
+	  respDto.setUserName(saved.getUser().getName());
+	  
+	  respDto.setServiceId(saved.getService().getServiceId());
+	  respDto.setServiceName(saved.getService().getName());
+	  respDto.setServiceDescription(saved.getService().getDescription());
+	  respDto.setServicePrice(saved.getService().getPrice());
+	  
+	  respDto.setPgId(saved.getPgProperty().getPgId());
+	  respDto.setPgName(saved.getPgProperty().getName());
+	  
+	  respDto.setRoomId(room.getRoomId());
+	  
+	  return respDto;
+	}
 }

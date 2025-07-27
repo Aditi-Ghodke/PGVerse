@@ -18,7 +18,11 @@ import com.pgverse.custom_exceptions.ResourceNotFoundException;
 import com.pgverse.dao.BookingDao;
 import com.pgverse.dao.OwnerDao;
 import com.pgverse.dao.PgPropertyDao;
+import com.pgverse.dao.PgServiceDao;
 import com.pgverse.dao.RoomDao;
+import com.pgverse.dao.UserServiceRequestDao;
+import com.pgverse.dto.AddServiceDTO;
+import com.pgverse.dto.AddedServiceResponseDTO;
 import com.pgverse.dto.ApiResponse;
 import com.pgverse.dto.BookingRespDTO;
 import com.pgverse.dto.ChangePasswordDTO;
@@ -26,15 +30,18 @@ import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.OwnerRespDto;
 import com.pgverse.dto.PgPropertyReqDTO;
 import com.pgverse.dto.PgPropertyRespDTO;
+import com.pgverse.dto.RequestedServiceResponseDTO;
 import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.RoomRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.entities.Booking;
 import com.pgverse.entities.Owner;
 import com.pgverse.entities.PgProperty;
+import com.pgverse.entities.PgService;
 import com.pgverse.entities.PgType;
 import com.pgverse.entities.Room;
 import com.pgverse.entities.Status;
+import com.pgverse.entities.UserServiceRequest;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -51,6 +58,8 @@ public class OwnerServiceImpl implements OwnerService{
     private final PgPropertyDao pgPropertyDao;
     private final RoomDao roomDao;
     private final BookingDao bookingDao;
+    private final PgServiceDao pgserviceDao;
+    private final UserServiceRequestDao userServiceRequestDao;
     
   //----------OWNERS-----------
     
@@ -414,5 +423,75 @@ public class OwnerServiceImpl implements OwnerService{
 
 	        return dto;
 	    }).collect(Collectors.toList());
+	}
+
+	
+	//----------PGPROPERTY-----------
+	
+	
+	@Override
+	public AddedServiceResponseDTO addService(Long ownerId,AddServiceDTO dto) {
+		
+		Room room = roomDao.findById(dto.getRoomId())
+	            .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
+
+		 PgProperty pgProperty = room.getPgproperty();
+		
+		 // Check if the PG's owner matches the current owner
+		    if (!pgProperty.getOwner().getOwnerId().equals(ownerId)) {
+		        throw new ApiException("You are not authorized to add services to this PG");
+		    }
+		    
+		 PgService pgservice = modelMapper.map(dto, PgService.class);
+		 
+		 pgservice.setRoom(room);
+		 
+		 PgService savedService = pgserviceDao.save(pgservice);
+		 
+		 AddedServiceResponseDTO responseDTO = new AddedServiceResponseDTO();
+
+		 
+		 
+		 responseDTO.setServiceId(savedService.getServiceId());
+		 responseDTO.setServiceName(savedService.getName());
+		 responseDTO.setServiceDescription(savedService.getDescription());
+		 responseDTO.setServicePrice(savedService.getPrice());
+		 responseDTO.setPgId(pgProperty.getPgId());
+		 responseDTO.setPgName(pgProperty.getName());
+		
+		responseDTO.setRoomId(room.getRoomId());
+		
+		return responseDTO;
+	}
+
+	@Override
+	public List<RequestedServiceResponseDTO> getServicesById(Long pgId) {
+		PgProperty pgProperty = pgPropertyDao.findById(pgId)
+		        .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+
+		List<UserServiceRequest> requests = userServiceRequestDao.findByPgProperty(pgProperty);
+	    if (requests.isEmpty()) {
+	        throw new ResourceNotFoundException("No service requests found for this PG");
+	    }
+
+	    return requests.stream()
+	        .map(req -> {
+	            RequestedServiceResponseDTO dto = new RequestedServiceResponseDTO();
+	            dto.setUserId(req.getUser().getUserId());
+	            dto.setUserName(req.getUser().getName());
+
+	            dto.setServiceId(req.getService().getServiceId());
+	            dto.setServiceName(req.getService().getName());
+	            dto.setServiceDescription(req.getService().getDescription());
+	            dto.setServicePrice(req.getService().getPrice());
+
+	            dto.setPgId(pgProperty.getPgId());
+	            dto.setPgName(pgProperty.getName());
+	            
+	            dto.setRoomId(req.getService().getRoom().getRoomId());
+
+	            return dto;
+	        })
+	        .collect(Collectors.toList());
 	}
 }

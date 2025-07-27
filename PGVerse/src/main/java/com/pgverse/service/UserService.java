@@ -10,11 +10,16 @@ import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.LoginRespDTO;
 import com.pgverse.dto.PaymentReqDTO;
+import com.pgverse.dto.RequestServiceDTO;
+import com.pgverse.dto.RequestedServiceResponseDTO;
 import com.pgverse.dto.ReviewReqDTO;
 import com.pgverse.dto.ReviewRespDTO;
+import com.pgverse.dto.AddedServiceResponseDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.dto.UserReqDto;
 import com.pgverse.dto.UserRespDto;
+
+import jakarta.validation.Valid;
 
 public interface UserService {
 	
@@ -55,4 +60,6 @@ public interface UserService {
 	BookingRespDTO cancelBookingsByUserId(Long userId, Long bookingId);
 	
 	BookingRespDTO getBookingById(Long bookingId);
+
+	RequestedServiceResponseDTO requestService(@Valid RequestServiceDTO dto);
 }
