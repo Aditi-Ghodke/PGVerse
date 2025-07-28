@@ -160,6 +160,13 @@ public class UserController {
 	    		.body(userService.cancelBookingsByUserId(userId,  bookingId));
 	}
 	
+	@GetMapping("/bookings/update-status")
+	public ResponseEntity<String> manuallyUpdateBookings() {
+	    userService.updateCompletedBookings();
+	    return ResponseEntity.ok("Bookings updated");
+	}
+
+	
 	//--------SERVICES---------
 	
 	//REQUEST SERVICE

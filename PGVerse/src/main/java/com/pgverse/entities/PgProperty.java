@@ -27,7 +27,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString(callSuper = true)
+@ToString(callSuper = true, exclude = "rooms")
 @EqualsAndHashCode(of="pgId", callSuper = false)
 public class PgProperty {
 

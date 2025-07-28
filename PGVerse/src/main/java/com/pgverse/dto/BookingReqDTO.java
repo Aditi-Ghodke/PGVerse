@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 public class BookingReqDTO {
 	
-	@NotNull(message = "PLease enter Room ID")
+	@NotNull(message = "Please enter Room ID")
 	private Long userId;
 	
 	@NotNull(message = "PLease enter Room ID")

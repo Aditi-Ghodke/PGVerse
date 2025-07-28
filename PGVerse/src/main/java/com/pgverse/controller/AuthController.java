@@ -1,33 +1,32 @@
 package com.pgverse.controller;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.pgverse.dto.JwtRequest;
 import com.pgverse.dto.JwtResponse;
-import com.pgverse.security.JwtService;
+import com.pgverse.entities.Admin;
+import com.pgverse.entities.Owner;
+import com.pgverse.entities.User;
 import com.pgverse.security.CustomUserDetailsService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import com.pgverse.security.JwtService;
 
+import lombok.RequiredArgsConstructor;
+//
 //@RestController
 //@RequestMapping("/auth")
 //@RequiredArgsConstructor
 //public class AuthController {
 //
-//    @Autowired
 //    private final AuthenticationManager authManager;
-//
-//    @Autowired
 //    private final JwtService jwtService;
-//
-//    @Autowired
 //    private final CustomUserDetailsService userDetailsService;
 //
-//    
-//    //------------USER--------------
-//    
-//    
 //    @PostMapping("/login")
 //    public JwtResponse login(@RequestBody JwtRequest request) {
 //        authManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -35,34 +34,15 @@ import org.springframework.web.bind.annotation.*;
 //
 //        final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 //        final String token = jwtService.generateToken(userDetails);
-//        return new JwtResponse(token); 
-//    }
-//    
-//    //------------OWNER--------------
-//    
-//    @PostMapping("/owner/login")
-//    public JwtResponse ownerLogin(@RequestBody JwtRequest request) {
-//        authManager.authenticate(new UsernamePasswordAuthenticationToken(
-//                request.getEmail(), request.getPassword()));
-//
-//        UserDetails ownerDetails = userDetailsService.loadOwnerByEmail(request.getEmail());
-//        String token = jwtService.generateToken(ownerDetails);
-//        return new JwtResponse(token);
-//    }
-//
-//    //------------ADMIN--------------
-//    
-//    @PostMapping("/admin/login")
-//    public JwtResponse adminLogin(@RequestBody JwtRequest request) {
-//        authManager.authenticate(new UsernamePasswordAuthenticationToken(
-//                request.getEmail(), request.getPassword()));
-//
-//        UserDetails adminDetails = userDetailsService.loadAdminByEmail(request.getEmail());
-//        String token = jwtService.generateToken(adminDetails);
-//        return new JwtResponse(token);
+//        
+//        return new JwtResponse(
+//                token,
+//                request.getEmail(),
+//                name,role;
+//                  
+//        );
 //    }
 //}
-
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -74,12 +54,33 @@ public class AuthController {
 
     @PostMapping("/login")
     public JwtResponse login(@RequestBody JwtRequest request) {
+        // Authenticate the credentials
         authManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getEmail(), request.getPassword()));
 
+        // Generate token
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         final String token = jwtService.generateToken(userDetails);
-        return new JwtResponse(token);
+
+        // Fetch the actual domain user (User, Owner, or Admin)
+        Object domainUser = userDetailsService.loadDomainUserByEmail(request.getEmail());
+
+        String name = "";
+        String role = "";
+
+        if (domainUser instanceof User user) {
+            name = user.getName();
+            role = "USER";
+        } else if (domainUser instanceof Owner owner) {
+            name = owner.getName();
+            role = "OWNER";
+        } else if (domainUser instanceof Admin admin) {
+            name = admin.getName();
+            role = "ADMIN";
+        }
+
+        // Return the full JWT response
+        return new JwtResponse(token, request.getEmail(), name, role);
     }
 }
 

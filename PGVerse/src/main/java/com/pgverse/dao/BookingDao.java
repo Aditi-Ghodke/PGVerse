@@ -32,7 +32,32 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 		                     @Param("checkOutDate") LocalDate checkOutDate,
 		                     @Param("status") BookingStatus status);
 	
+	
+	//ROOM CAPACITY CHECK
+	@Query("SELECT COUNT(b) FROM Booking b WHERE b.room = :room " +
+		       "AND b.status = :status " +
+		       "AND b.checkInDate < :endDate " +
+		       "AND b.checkOutDate > :startDate")
+		int countActiveBookingsForRoom(@Param("room") Room room,
+		                                @Param("startDate") LocalDate startDate,
+		                                @Param("endDate") LocalDate endDate,
+		                                @Param("status") BookingStatus status);
+	
+	//UPDATE THE CURRENT OCCUPANCY
+	@Query("SELECT COUNT(b) FROM Booking b WHERE b.room = :room " +
+		       "AND b.status = :status " +
+		       "AND :today BETWEEN b.checkInDate AND b.checkOutDate")
+		int countCurrentOccupants(@Param("room") Room room,
+		                          @Param("today") LocalDate today,
+		                          @Param("status") BookingStatus status);
+
+
+	
 	Optional<Booking> findByUserUserIdAndRoomRoomIdAndPgPropertyPgIdAndStatusNot(
 	        Long userId, Long roomId, Long pgId, BookingStatus cancelledStatus);
+	
+	@Query("SELECT b FROM Booking b WHERE b.checkOutDate < :today AND b.status = 'BOOKED'")
+	List<Booking> findBookingsToMarkCompleted(@Param("today") LocalDate today);
+
 	
 }

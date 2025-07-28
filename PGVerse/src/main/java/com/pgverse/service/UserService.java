@@ -60,6 +60,12 @@ public interface UserService {
 	BookingRespDTO cancelBookingsByUserId(Long userId, Long bookingId);
 	
 	BookingRespDTO getBookingById(Long bookingId);
+	
+	void updateCompletedBookings();
+	
+	//----------SERVICE-----------
 
 	RequestedServiceResponseDTO requestService(@Valid RequestServiceDTO dto);
+	
+	
 }

@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -285,13 +287,20 @@ public class UserServiceImpl implements UserService{
             throw new ApiException("Check-out date must be after check-in date");
         }
 
-        if (bookingDao.isRoomBooked(room, dto.getCheckInDate(), dto.getCheckOutDate(), BookingStatus.BOOKED)) {
-            throw new ApiException("Room is already booked for the selected dates");
-        }
+//        if (bookingDao.isRoomBooked(room, dto.getCheckInDate(), dto.getCheckOutDate(), BookingStatus.BOOKED)) {
+//            throw new ApiException("Room is already booked for the selected dates");
+//        }
 	        
         // Check room occupancy limit
-        if(room.getCurrentOccupancy()>=room.getCapacity()) {
-        	throw new ApiException("Room has reached its maximum occupancy");
+        int activeBookings = bookingDao.countActiveBookingsForRoom(
+        	    room,
+        	    dto.getCheckInDate(),
+        	    dto.getCheckOutDate(),
+        	    BookingStatus.BOOKED // or CONFIRMED if that's your "active"
+        	);
+        
+        if (activeBookings >= room.getCapacity()) {
+            throw new ApiException("Room has reached its maximum occupancy for the selected dates");
         }
         
         Booking booking = new Booking();
@@ -305,7 +314,9 @@ public class UserServiceImpl implements UserService{
 
         Booking savedBooking = bookingDao.save(booking);
 
-        room.setCurrentOccupancy(room.getCurrentOccupancy()+1);
+        int current = bookingDao.countCurrentOccupants(room, LocalDate.now(), BookingStatus.BOOKED);
+        room.setCurrentOccupancy(current);
+
         roomDao.save(room);
         
         // Map to response DTO
@@ -332,9 +343,10 @@ public class UserServiceImpl implements UserService{
             throw new ApiException("Payment already exists for this booking");
         }
         
-        //CHECK PRICE
+        //CHECK PRICE 
+        //USER WILL PAY HIS/HER SHARE ONLY
         Room room = booking.getRoom();
-        double expectedAmount = room.getPricePerMonth();
+        double expectedAmount = room.getPricePerMonth()/room.getCapacity();
         
         if(paymentDTO.getAmount()!=expectedAmount) {
         	throw new ApiException("Invalid payment amount. Expected: " + expectedAmount);
@@ -368,6 +380,41 @@ public class UserServiceImpl implements UserService{
         return respDto;
     }
 
+    
+    
+    //UPDATE COMPLETE BOOKING
+    
+    @Scheduled(cron = "0 0 1 * * ?") // Runs daily at 1 AM
+    public void updateCompletedBookings() {
+        LocalDate today = LocalDate.now();
+
+        // Step 1: Mark expired bookings as COMPLETED
+        List<Booking> bookingsToComplete = bookingDao.findBookingsToMarkCompleted(today);
+        for (Booking booking : bookingsToComplete) {
+            booking.setStatus(BookingStatus.COMPLETED);
+            bookingDao.save(booking);
+        }
+
+        // Step 2: For all affected rooms, update their currentOccupancy based on today
+        Set<Room> affectedRooms = bookingsToComplete.stream()
+            .map(booking -> booking.getRoom())
+            .collect(Collectors.toSet());
+
+        for (Room room : affectedRooms) {
+            int currentOccupants = bookingDao.countCurrentOccupants(room, today, BookingStatus.BOOKED);
+            room.setCurrentOccupancy(currentOccupants);
+            if (currentOccupants == 0) {
+                room.setStatus(RoomStatus.AVAILABLE);
+            } else {
+                room.setStatus(RoomStatus.OCCUPIED);
+            }
+            roomDao.save(room);
+        }
+    }
+
+    
+    
+    
     
   //GET ALL BOOKINGS BY USERID
 	@Override

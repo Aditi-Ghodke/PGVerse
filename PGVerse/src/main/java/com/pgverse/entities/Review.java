@@ -1,6 +1,7 @@
 package com.pgverse.entities;
 
 import java.sql.Date;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,7 +38,7 @@ public class Review {
 	@NotBlank(message = "Please add a comment")
 	private String comment;
 	
-	private Date feedbackDate;
+	private LocalDate feedbackDate;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
