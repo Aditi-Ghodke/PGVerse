@@ -45,9 +45,11 @@ public class AdminServiceImpl implements AdminService{
 	 Admin admin = adminDao.findByEmail(dto.getEmail())
 				.orElseThrow(() -> new ApiException("User not found"));
 	 if(!dto.getPassword().equals(admin.getPassword())) {
-		 throw new ApiException("Invalid email");
+		 throw new ApiException("Incorrect credentials");
 	 }
-		return modelMapper.map(admin, AdminRespDTO.class);
+	 AdminRespDTO admindto = modelMapper.map(admin, AdminRespDTO.class);
+	 //admindto.setId(admin.getAdminId());
+	 return admindto;
 	}
 	
 	//----------USERS-----------
@@ -61,16 +63,23 @@ public class AdminServiceImpl implements AdminService{
 			throw new ResourceNotFoundException("No tenants found.");
 		}
 		return users.stream()
-				.map(user->modelMapper.map(user, UserRespDto.class))
-				.collect(Collectors.toList());
+		        .map(user -> {
+		            UserRespDto dto = modelMapper.map(user, UserRespDto.class);
+		            return dto;
+		        })
+		        .collect(Collectors.toList());
 	}
 
 	//GET USERS BY ID
 	@Override
 	public UserRespDto getUserById(Long userId) {
 		return userDao.findByUserId(userId)
-				.map(user->modelMapper.map(user, UserRespDto.class))
-				.orElseThrow(()->new ApiException("Tenant Not Found!"));
+		        .map(user -> {
+		            UserRespDto dto = modelMapper.map(user, UserRespDto.class);
+		           
+		            return dto;
+		        })
+		        .orElseThrow(() -> new ApiException("Tenant Not Found!"));
 	}
 
 	//----------OWNERS-----------

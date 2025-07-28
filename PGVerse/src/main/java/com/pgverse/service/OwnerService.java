@@ -13,6 +13,7 @@ import com.pgverse.dto.OwnerRespDto;
 import com.pgverse.dto.PgPropertyReqDTO;
 import com.pgverse.dto.PgPropertyRespDTO;
 import com.pgverse.dto.RequestedServiceResponseDTO;
+import com.pgverse.dto.ReviewRespDTO;
 import com.pgverse.dto.AddServiceDTO;
 import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.RoomRespDTO;
@@ -62,4 +63,6 @@ public interface OwnerService {
 	AddedServiceResponseDTO addService(Long ownerId, AddServiceDTO dto);
 
 	List<RequestedServiceResponseDTO> getServicesById(Long pgId);
+
+	List<ReviewRespDTO> reviewForPg(Long pgId);
 }

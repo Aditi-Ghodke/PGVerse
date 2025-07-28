@@ -180,4 +180,13 @@ public class OwnerController {
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ownerService.getServicesById(pgId));
 	}
+	
+	//--------REVIEWS---------
+	
+	//GET REVIEW BY PGID
+		@GetMapping("/pgproperty/{pgId}/reviews")
+		public ResponseEntity<?> getReviewByPgId(@PathVariable Long pgId){
+			return ResponseEntity.status(HttpStatus.OK)
+					.body(ownerService.reviewForPg(pgId));
+		}
 }

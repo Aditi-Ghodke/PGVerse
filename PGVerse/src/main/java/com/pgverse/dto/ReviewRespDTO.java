@@ -14,7 +14,7 @@ public class ReviewRespDTO {
 	private int rating;
 	private String comment;
 	private Date feedbackDate;
-	private Long userid;
+	private Long userId;;
 	private String userName;
 	private Long pgPropertyid;
 	private String pgPropertyName;

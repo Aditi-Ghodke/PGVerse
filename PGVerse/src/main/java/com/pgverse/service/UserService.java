@@ -44,8 +44,6 @@ public interface UserService {
 	ReviewRespDTO updateReview(Long reiewId, ReviewReqDTO dto);
 
 	List<ReviewRespDTO> getReviewById(Long reviewId);
-	
-	List<ReviewRespDTO> reviewForPg(Long pgId);
 
 	ApiResponse deleteReview(Long reviewId);
 	

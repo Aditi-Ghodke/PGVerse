@@ -208,7 +208,7 @@ public class UserServiceImpl implements UserService{
 		Review updated = reviewDao.save(review);
 		
 		ReviewRespDTO res = modelMapper.map(updated, ReviewRespDTO.class);
-		res.setUserid(updated.getUser().getUserId());
+		//res.setUserid(updated.getUser().getUserId());
 		res.setPgPropertyName(updated.getUser().getName());
 		res.setPgPropertyid(updated.getPgProperty().getPgId());
 		res.setPgPropertyName(updated.getPgProperty().getName());
@@ -226,31 +226,13 @@ public class UserServiceImpl implements UserService{
 			ReviewRespDTO dto = modelMapper.map(review, ReviewRespDTO.class);
 			dto.setPgPropertyid(review.getPgProperty().getPgId());
 			dto.setPgPropertyName(review.getPgProperty().getName());
-			dto.setUserid(review.getUser().getUserId());
+			//dto.setUserid(review.getUser().getUserId());
 			dto.setUserName(review.getUser().getName());
 			
 			return dto;
 		}).collect(Collectors.toList());
 	}
 	
-	//GET REVIEW BY PGID
-	@Override
-	public List<ReviewRespDTO> reviewForPg(Long pgId) {
-		PgProperty pgproperty = pgPropertyDao.findByPgId(pgId)
-				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
-		
-		List<Review> reviews = reviewDao.findByPgProperty(pgproperty);
-		return reviews.stream().map(review -> {
-			ReviewRespDTO dto = modelMapper.map(review, ReviewRespDTO.class);
-			dto.setPgPropertyid(review.getPgProperty().getPgId());
-			dto.setPgPropertyName(review.getPgProperty().getName());
-			dto.setUserid(review.getUser().getUserId());
-			dto.setUserName(review.getUser().getName());
-			
-			return dto;
-		}).collect(Collectors.toList());
-	}
-
 	//DELETE REVIEW BY REVIEWID
 	@Override
 	public ApiResponse deleteReview(Long reviewId) {

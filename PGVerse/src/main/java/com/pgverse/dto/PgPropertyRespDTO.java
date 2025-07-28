@@ -11,7 +11,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 public class PgPropertyRespDTO {
-	
+	private Long pgId;
 	private String name;
 	private String location;
 	private PgType pgType;

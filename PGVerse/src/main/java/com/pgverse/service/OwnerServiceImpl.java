@@ -19,6 +19,7 @@ import com.pgverse.dao.BookingDao;
 import com.pgverse.dao.OwnerDao;
 import com.pgverse.dao.PgPropertyDao;
 import com.pgverse.dao.PgServiceDao;
+import com.pgverse.dao.ReviewDao;
 import com.pgverse.dao.RoomDao;
 import com.pgverse.dao.UserServiceRequestDao;
 import com.pgverse.dto.AddServiceDTO;
@@ -31,6 +32,7 @@ import com.pgverse.dto.OwnerRespDto;
 import com.pgverse.dto.PgPropertyReqDTO;
 import com.pgverse.dto.PgPropertyRespDTO;
 import com.pgverse.dto.RequestedServiceResponseDTO;
+import com.pgverse.dto.ReviewRespDTO;
 import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.RoomRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
@@ -39,6 +41,7 @@ import com.pgverse.entities.Owner;
 import com.pgverse.entities.PgProperty;
 import com.pgverse.entities.PgService;
 import com.pgverse.entities.PgType;
+import com.pgverse.entities.Review;
 import com.pgverse.entities.Room;
 import com.pgverse.entities.Status;
 import com.pgverse.entities.UserServiceRequest;
@@ -60,6 +63,7 @@ public class OwnerServiceImpl implements OwnerService{
     private final BookingDao bookingDao;
     private final PgServiceDao pgserviceDao;
     private final UserServiceRequestDao userServiceRequestDao;
+    private final ReviewDao reviewDao;
     
   //----------OWNERS-----------
     
@@ -494,4 +498,23 @@ public class OwnerServiceImpl implements OwnerService{
 	        })
 	        .collect(Collectors.toList());
 	}
+
+	@Override
+	public List<ReviewRespDTO> reviewForPg(Long pgId) {
+		PgProperty pgproperty = pgPropertyDao.findByPgId(pgId)
+				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
+		
+		List<Review> reviews = reviewDao.findByPgProperty(pgproperty);
+		return reviews.stream().map(review -> {
+			ReviewRespDTO dto = modelMapper.map(review, ReviewRespDTO.class);
+			dto.setPgPropertyid(review.getPgProperty().getPgId());
+			dto.setPgPropertyName(review.getPgProperty().getName());
+			//dto.setUserid(review.getUser().getUserId());
+			dto.setUserName(review.getUser().getName());
+			
+			return dto;
+		}).collect(Collectors.toList());
+	}
+	
+	
 }

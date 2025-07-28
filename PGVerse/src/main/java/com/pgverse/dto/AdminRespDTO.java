@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class AdminRespDTO {
 	
+	private Long adminId;
 	private String name;
 	private String email;
 	

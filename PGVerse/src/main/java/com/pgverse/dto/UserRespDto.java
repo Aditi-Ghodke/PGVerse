@@ -10,7 +10,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 public class UserRespDto {
-	
+	private Long userId;
 	private String name;
 	private String email;
 	private String phone;

@@ -31,6 +31,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()  
@@ -79,7 +80,7 @@ public class SecurityConfig {
 	    config.setAllowCredentials(true); // Important for sending cookies or Authorization header
 
 	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	    source.registerCorsConfiguration("/", config);
+	    source.registerCorsConfiguration("/**", config);
 	    return source;
 	}
 }

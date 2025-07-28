@@ -106,12 +106,6 @@ public class UserController {
 				.body(userService.getReviewById(userId));
 	}
 	
-	//GET REVIEW BY USERID
-	@GetMapping("/pgproperty/{pgId}/reviews")
-	public ResponseEntity<?> getReviewByPgId(@PathVariable Long pgId){
-		return ResponseEntity.status(HttpStatus.OK)
-				.body(userService.reviewForPg(pgId));
-	}
 	
 	//DELETE REIEW
 	@DeleteMapping("/reviews/{reviewId}")

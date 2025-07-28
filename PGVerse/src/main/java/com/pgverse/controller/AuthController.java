@@ -64,23 +64,25 @@ public class AuthController {
 
         // Fetch the actual domain user (User, Owner, or Admin)
         Object domainUser = userDetailsService.loadDomainUserByEmail(request.getEmail());
-
+        Long id = null;
         String name = "";
         String role = "";
 
         if (domainUser instanceof User user) {
+        	id = user.getUserId();
             name = user.getName();
             role = "USER";
         } else if (domainUser instanceof Owner owner) {
+        	id = owner.getOwnerId();
             name = owner.getName();
             role = "OWNER";
         } else if (domainUser instanceof Admin admin) {
+        	 id = admin.getAdminId();
             name = admin.getName();
             role = "ADMIN";
         }
 
-        // Return the full JWT response
-        return new JwtResponse(token, request.getEmail(), name, role);
+        return new JwtResponse(id, token, request.getEmail(), name, role);
     }
 }
 
