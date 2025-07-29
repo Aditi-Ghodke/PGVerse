@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
@@ -23,7 +24,6 @@ import com.pgverse.entities.Owner;
 import com.pgverse.entities.Role;
 import com.pgverse.entities.User;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 @Service
 

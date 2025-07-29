@@ -65,4 +65,6 @@ public interface OwnerService {
 	List<RequestedServiceResponseDTO> getServicesById(Long pgId);
 
 	List<ReviewRespDTO> reviewForPg(Long pgId);
+
+	void updateCompletedBookings();
 }

@@ -189,4 +189,13 @@ public class OwnerController {
 			return ResponseEntity.status(HttpStatus.OK)
 					.body(ownerService.reviewForPg(pgId));
 		}
+		
+		
+	//--------BOOKINGS----------
+		
+	@GetMapping("/bookings/update-status")
+	public ResponseEntity<String> manuallyUpdateBookings() {
+		ownerService.updateCompletedBookings();
+		   return ResponseEntity.ok("Bookings updated");
+	}
 }

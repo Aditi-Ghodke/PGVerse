@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
@@ -50,7 +51,7 @@ import com.pgverse.entities.ServiceStatus;
 import com.pgverse.entities.User;
 import com.pgverse.entities.UserServiceRequest;
 
-import jakarta.transaction.Transactional;
+
 import lombok.AllArgsConstructor;
 
 

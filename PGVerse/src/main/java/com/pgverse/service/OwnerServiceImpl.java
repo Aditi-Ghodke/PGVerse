@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pgverse.custom_exceptions.ApiException;
 import com.pgverse.custom_exceptions.ResourceNotFoundException;
@@ -37,16 +41,17 @@ import com.pgverse.dto.RoomReqDTO;
 import com.pgverse.dto.RoomRespDTO;
 import com.pgverse.dto.UpdateUserDTO;
 import com.pgverse.entities.Booking;
+import com.pgverse.entities.BookingStatus;
 import com.pgverse.entities.Owner;
 import com.pgverse.entities.PgProperty;
 import com.pgverse.entities.PgService;
 import com.pgverse.entities.PgType;
 import com.pgverse.entities.Review;
 import com.pgverse.entities.Room;
+import com.pgverse.entities.RoomStatus;
 import com.pgverse.entities.Status;
 import com.pgverse.entities.UserServiceRequest;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -499,6 +504,8 @@ public class OwnerServiceImpl implements OwnerService{
 	        .collect(Collectors.toList());
 	}
 
+	//--------REVIEW----------
+	
 	@Override
 	public List<ReviewRespDTO> reviewForPg(Long pgId) {
 		PgProperty pgproperty = pgPropertyDao.findByPgId(pgId)
@@ -517,4 +524,34 @@ public class OwnerServiceImpl implements OwnerService{
 	}
 	
 	
+	//--------BOOKINGS----------
+	
+	 @Scheduled(cron = "0 0 1 * * ?") // Runs daily at 1 AM
+	    public void updateCompletedBookings() {
+	        LocalDate today = LocalDate.now();
+
+	        // Step 1: Mark expired bookings as COMPLETED
+	        List<Booking> bookingsToComplete = bookingDao.findBookingsToMarkCompleted(today);
+	        for (Booking booking : bookingsToComplete) {
+	            booking.setStatus(BookingStatus.COMPLETED);
+	            bookingDao.save(booking);
+	        }
+
+	        // Step 2: For all affected rooms, update their currentOccupancy based on today
+	        Set<Room> affectedRooms = bookingsToComplete.stream()
+	            .map(booking -> booking.getRoom())
+	            .collect(Collectors.toSet());
+
+	        for (Room room : affectedRooms) {
+	            int currentOccupants = bookingDao.countCurrentOccupants(room, today, BookingStatus.BOOKED);
+	            room.setCurrentOccupancy(currentOccupants);
+	            if (currentOccupants == 0) {
+	                room.setStatus(RoomStatus.AVAILABLE);
+	            } else {
+	                room.setStatus(RoomStatus.OCCUPIED);
+	            }
+	            roomDao.save(room);
+	        }
+	    }
+
 }

@@ -140,7 +140,7 @@ public class UserController {
         return ResponseEntity.ok(resp);
     }
 	
-	//GET ALL BOOKINGS BY BOOKINGID
+	//GET BOOKINGS BY BOOKINGID
 		@GetMapping("/bookings/{bookingId}")
 	    public ResponseEntity<?> getBookingsByBookingId(@PathVariable Long bookingId) {
 	        return ResponseEntity.status(HttpStatus.OK)
