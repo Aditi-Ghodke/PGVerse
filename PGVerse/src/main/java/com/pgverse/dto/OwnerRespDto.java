@@ -13,7 +13,6 @@ public class OwnerRespDto {
 	private Long ownerId;
 	private String name;
 	private String email;
-	private String password;
 	private String phone;
 	private String gender;
 	private String address;

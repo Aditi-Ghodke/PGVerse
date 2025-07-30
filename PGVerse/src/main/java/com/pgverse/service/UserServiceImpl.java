@@ -100,21 +100,8 @@ public class UserServiceImpl implements UserService{
 		 }
 		 return modelMapper.map(user, UserRespDto.class);
 	}
-
-//	@Override
-//	public LoginRespDTO loginUser(LoginReqDTO loginDto) {
-//		Authentication auth = authenticationManager.authenticate(
-//		        new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
-//		    );
-//
-//		    UserDetails userDetails = (UserDetails) auth.getPrincipal();
-//		    String token = jwtService.generateToken(userDetails);
-//
-//		    return new LoginRespDTO(token);
-//	}
-
 	
-	//USER -> CHANGEPASSWORD
+	//CHANGEPASSWORD
 	@Override
 	public String changePassword(ChangePasswordDTO dto) {
 		User user = userDao.findByEmail(dto.getEmail())
@@ -270,10 +257,6 @@ public class UserServiceImpl implements UserService{
             throw new ApiException("Check-out date must be after check-in date");
         }
 
-//        if (bookingDao.isRoomBooked(room, dto.getCheckInDate(), dto.getCheckOutDate(), BookingStatus.BOOKED)) {
-//            throw new ApiException("Room is already booked for the selected dates");
-//        }
-	        
         // Check room occupancy limit
         int activeBookings = bookingDao.countActiveBookingsForRoom(
         	    room,
@@ -301,6 +284,8 @@ public class UserServiceImpl implements UserService{
         room.setCurrentOccupancy(current);
 
         roomDao.save(room);
+        
+        roomDao.saveAndFlush(room);
         
         // Map to response DTO
         

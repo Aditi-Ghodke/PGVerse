@@ -1,5 +1,7 @@
 package com.pgverse.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.pgverse.dto.AddServiceDTO;
+import com.pgverse.dto.BookingRespDTO;
 import com.pgverse.dto.RequestServiceDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
@@ -198,4 +201,12 @@ public class OwnerController {
 		ownerService.updateCompletedBookings();
 		   return ResponseEntity.ok("Bookings updated");
 	}
+	
+	
+	@GetMapping("/bookings/pgproperty/{pgId}")
+    public ResponseEntity<List<BookingRespDTO>> getBookingsByUserId(@PathVariable Long pgId) {
+        List<BookingRespDTO> resp = ownerService.getBookingsByPgId(pgId);
+        return ResponseEntity.ok(resp);
+    }
+	
 }
