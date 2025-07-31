@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -206,9 +207,12 @@ public class OwnerServiceImpl implements OwnerService{
 	//DELTE PROPERTY
 	@Override
 	public ApiResponse deletePgProperty(Long id) {
-		PgProperty pgproperty = pgPropertyDao.findByPgId(id)
-				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
-		
+//		PgProperty pgproperty = pgPropertyDao.findByPgId(id)
+//				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
+
+		PgProperty pgproperty = pgPropertyDao.findById(id)
+		        .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
+
 		//delete image
 		   if (pgproperty.getImagePath() != null) {
 			   //System.getProperty gives root folder
@@ -226,9 +230,13 @@ public class OwnerServiceImpl implements OwnerService{
 
 	//GET PGPROPERTYBYID
 	@Override
-	public PgPropertyRespDTO getPropertyById(Long pgId) {
-		PgProperty pgproperty = pgPropertyDao.findByPgId(pgId)
-				.orElseThrow(()-> new ResourceNotFoundException("Pg not found!"));
+	public PgPropertyRespDTO getPropertyById(Long id) {
+//		PgProperty pgproperty = pgPropertyDao.findByPgId(pgId)
+//				.orElseThrow(()-> new ResourceNotFoundException("Pg not found!"));
+		
+		PgProperty pgproperty = pgPropertyDao.findById(id)
+		        .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
+
 		PgPropertyRespDTO pgpropertydto = modelMapper.map(pgproperty, PgPropertyRespDTO.class);
 		pgpropertydto.setOwnerid(pgproperty.getOwner().getOwnerId());
 		pgpropertydto.setOwnername(pgproperty.getOwner().getName());
@@ -241,10 +249,15 @@ public class OwnerServiceImpl implements OwnerService{
 		Owner owner =  ownerDao.findByOwnerId(ownerId)
 				.orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
 		
-		List<PgProperty> pgList = owner.getPg();
-		if(pgList.isEmpty() || pgList == null) {
-			throw new ResourceNotFoundException("No PG properties found for the owner");
-		}
+//		List<PgProperty> pgList = owner.getPg();
+//		if(pgList.isEmpty() || pgList == null) {
+//			throw new ResourceNotFoundException("No PG properties found for the owner");
+//		}
+		
+		  List<PgProperty> pgList = owner.getPg();
+		    if (pgList == null || pgList.isEmpty()) {
+		        return new ArrayList<>();
+		    }
 		return owner.getPg().stream().map( pg->{
 			PgPropertyRespDTO dto = modelMapper.map(pg, PgPropertyRespDTO.class);
 			
@@ -262,9 +275,12 @@ public class OwnerServiceImpl implements OwnerService{
 	//ADD ADD ROOM TO PGPROPERTY
 	@Override
 	public RoomRespDTO addRoomToPg(Long pgId,MultipartFile imageFile, @Valid RoomReqDTO roomDto) {
-		PgProperty pg = pgPropertyDao.findByPgId(pgId)
-				.orElseThrow(()-> new ResourceNotFoundException("PG Not Found!"));
+//		PgProperty pg = pgPropertyDao.findByPgId(pgId)
+//				.orElseThrow(()-> new ResourceNotFoundException("PG Not Found!"));
 		
+		PgProperty pg = pgPropertyDao.findById(pgId)
+		        .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
+
 		Room room = modelMapper.map(roomDto, Room.class);
 		room.setPgproperty(pg);
 		
@@ -361,8 +377,11 @@ public class OwnerServiceImpl implements OwnerService{
 	//GET ALL ROOMS BY PGID
 	@Override
 	public List<RoomRespDTO> getAllRooms(Long pgId) {
-	    PgProperty pgProp = pgPropertyDao.findByPgId(pgId)
-	            .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+//	    PgProperty pgProp = pgPropertyDao.findByPgId(pgId)
+//	            .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+
+		PgProperty pgProp = pgPropertyDao.findById(pgId)
+		        .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
 
 	    List<Room> rooms = pgProp.getRooms();
 	    if(rooms == null || rooms.isEmpty()) {
@@ -475,9 +494,14 @@ public class OwnerServiceImpl implements OwnerService{
 
 	@Override
 	public List<RequestedServiceResponseDTO> getServicesById(Long pgId) {
-		PgProperty pgProperty = pgPropertyDao.findById(pgId)
-		        .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+//		PgProperty pgProperty = pgPropertyDao.findById(pgId)
+//		        .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
 
+		
+		System.out.println("PG ID: " + pgId);
+		PgProperty pgProperty = pgPropertyDao.findById(pgId)
+		    .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+		System.out.println("PG Property found: " + pgProperty.getName());
 		List<UserServiceRequest> requests = userServiceRequestDao.findByPgProperty(pgProperty);
 	    if (requests.isEmpty()) {
 	        throw new ResourceNotFoundException("No service requests found for this PG");

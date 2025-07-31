@@ -20,5 +20,4 @@ public class PgPropertyRespDTO {
 	private Long ownerid;
 	private String ownername;
 	private String imagePath;
-	
 }
