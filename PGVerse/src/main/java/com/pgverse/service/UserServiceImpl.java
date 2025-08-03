@@ -53,6 +53,7 @@ import com.pgverse.entities.UserServiceRequest;
 
 
 import lombok.AllArgsConstructor;
+import java.time.LocalDate;
 
 
 @Service
@@ -174,6 +175,12 @@ public class UserServiceImpl implements UserService{
 		User user = userDao.findByUserId(userId)
 				.orElseThrow(()->new ResourceNotFoundException("User Not Found!"));
 		
+		 // Check if user has any booking for this PG
+	    boolean hasBooking = bookingDao.existsByUserAndPgProperty(user, pgproperty);
+	    if (!hasBooking) {
+	        throw new ApiException("You cannot review this PG unless you have a booking.");
+	    }
+		
 		if(reviewDao.existsByUserAndPgProperty(user, pgproperty)) {
 			throw new ApiException("You have already reviewed this pg.");
 		}
@@ -181,6 +188,9 @@ public class UserServiceImpl implements UserService{
 		Review review = modelMapper.map(dto, Review.class);
 		review.setUser(user);
 		review.setPgProperty(pgproperty);
+		review.setFeedbackDate(LocalDate.now());
+
+		
 		return modelMapper.map(reviewDao.save(review), ReviewRespDTO.class);
 	}
 
