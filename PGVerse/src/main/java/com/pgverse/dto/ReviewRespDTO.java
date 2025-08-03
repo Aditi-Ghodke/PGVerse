@@ -1,6 +1,6 @@
 package com.pgverse.dto;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +13,7 @@ public class ReviewRespDTO {
 	
 	private int rating;
 	private String comment;
-	private Date feedbackDate;
+	private LocalDate feedbackDate;
 	private Long userId;;
 	private String userName;
 	private Long pgPropertyid;
