@@ -11,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 import com.pgverse.entities.Booking;
 import com.pgverse.entities.BookingStatus;
 import com.pgverse.entities.Room;
+import com.pgverse.entities.User;
+import com.pgverse.entities.PgProperty;
+
 
 
 public interface BookingDao extends JpaRepository<Booking, Long>{
@@ -59,5 +62,7 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 	@Query("SELECT b FROM Booking b WHERE b.checkOutDate < :today AND b.status = 'BOOKED'")
 	List<Booking> findBookingsToMarkCompleted(@Param("today") LocalDate today);
 
+	boolean existsByUserAndPgProperty(User user, PgProperty pgProperty);
+	
 	
 }
