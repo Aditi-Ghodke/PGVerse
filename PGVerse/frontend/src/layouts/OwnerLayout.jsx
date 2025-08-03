@@ -56,7 +56,7 @@ const OwnerLayout = () => {
 
         <button
           onClick={() => setView("managePG")}
-           className="w-full bg-blue-500 px-4 py-2 rounded"
+          className="w-full bg-blue-500 px-4 py-2 rounded"
         >
           Manage PG Properties
         </button>
