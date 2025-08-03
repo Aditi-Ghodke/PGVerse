@@ -1,4 +1,3 @@
-
 package com.pgverse.security;
 
 import java.util.List;
@@ -8,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -15,6 +15,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,8 +24,9 @@ import lombok.RequiredArgsConstructor;
 
 
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class SecurityConfig implements WebMvcConfigurer{
 
     private final JwtAuthenticationFilter jwtFilter;
     private final CustomUserDetailsService userDetailsService;
@@ -35,14 +38,17 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()  
+                .requestMatchers("/pgproperty/**").permitAll()
                 .requestMatchers("/users/register").permitAll()
+                .requestMatchers("/uploads/**").permitAll()  
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/users/**").hasRole("USER")
                 .requestMatchers("/owners/**").hasRole("OWNER")
                 .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
-                        "/swagger-ui.html"
+                        "/swagger-ui.html",
+                        "/pgproperty/**"
                     ).permitAll()
                 .anyRequest().authenticated()
             )
@@ -83,4 +89,15 @@ public class SecurityConfig {
 	    source.registerCorsConfiguration("/**", config);
 	    return source;
 	}
+    
+    
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry
+            .addResourceHandler("/uploads/**")
+            .addResourceLocations("file:uploads/")
+            .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
+    
+    }
+    
 }
