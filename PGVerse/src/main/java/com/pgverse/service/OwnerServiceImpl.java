@@ -126,82 +126,187 @@ public class OwnerServiceImpl implements OwnerService{
 	
 	
 	//ADD PGPROPERTY
-		@Override
-		public PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId)
-		        throws IOException {
+//		@Override
+//		public PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId)
+//		        throws IOException {
+//
+//		    String uploadDir = "uploads/images/pg_property/";
+//		    File dir = new File(uploadDir);
+//		    if (!dir.exists()) dir.mkdirs();
+//		    
+//		    String original = imageFile.getOriginalFilename();
+//		    String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+//		    String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
+//
+////		    String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+////		    Path filePath = Paths.get(uploadDir + fileName);
+////		    Files.write(filePath, imageFile.getBytes());
+//		    
+//		    Path filePath = Paths.get(uploadDir + fileName);
+//		    Files.write(filePath, imageFile.getBytes());
+//
+//		    Owner owner = ownerDao.findByOwnerId(ownerId)
+//		            .orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
+//
+//		    PgProperty pg = modelMapper.map(dto, PgProperty.class);
+//		    pg.setStatus(Status.AVAILABLE);
+//		    pg.setPgType(PgType.GIRLS);
+//		    pg.setOwner(owner);
+//		    
+////		    pg.setImagePath(uploadDir + fileName);
+//		    pg.setImagePath("uploads/images/pg_property/" + fileName);  
+//
+//		    
+//		    PgProperty savedPg = pgPropertyDao.save(pg);
+//
+//		   
+//		    PgPropertyRespDTO res = modelMapper.map(savedPg, PgPropertyRespDTO.class);
+//		    res.setOwnerid(owner.getOwnerId());
+//		    res.setOwnername(owner.getName());
+//
+//		    return res;
+//		}
+	
+	
+	
+	@Override
+	public PgPropertyRespDTO addPgProperty(PgPropertyReqDTO dto, MultipartFile imageFile, Long ownerId) throws IOException {
 
-		    String uploadDir = "uploads/images/pg_property/";
-		    File dir = new File(uploadDir);
-		    if (!dir.exists()) dir.mkdirs();
+	    String uploadDir = System.getProperty("user.dir") + "/uploads/images/pg_property/";
+	    File dir = new File(uploadDir);
+	    if (!dir.exists()) dir.mkdirs();
 
-		    String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-		    Path filePath = Paths.get(uploadDir + fileName);
-		    Files.write(filePath, imageFile.getBytes());
+	    String original = imageFile.getOriginalFilename();
+	    String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+	    String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
 
-		    Owner owner = ownerDao.findByOwnerId(ownerId)
-		            .orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
+	    Path filePath = Paths.get(uploadDir, fileName);
+	    Files.write(filePath, imageFile.getBytes());
 
-		    PgProperty pg = modelMapper.map(dto, PgProperty.class);
-		    pg.setStatus(Status.AVAILABLE);
-		    pg.setPgType(PgType.GIRLS);
-		    pg.setOwner(owner);
-		    
-		    pg.setImagePath(uploadDir + fileName);
+	    Owner owner = ownerDao.findByOwnerId(ownerId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Owner not found"));
 
-		    
-		    PgProperty savedPg = pgPropertyDao.save(pg);
+	    PgProperty pg = modelMapper.map(dto, PgProperty.class);
+	    pg.setStatus(Status.AVAILABLE);
+	    pg.setPgType(PgType.GIRLS);
+	    pg.setOwner(owner);
 
-		   
-		    PgPropertyRespDTO res = modelMapper.map(savedPg, PgPropertyRespDTO.class);
-		    res.setOwnerid(owner.getOwnerId());
-		    res.setOwnername(owner.getName());
+	    // Store relative path for URL access
+	    pg.setImagePath("uploads/images/pg_property/" + fileName);
 
-		    return res;
-		}
+	    PgProperty savedPg = pgPropertyDao.save(pg);
+
+	    PgPropertyRespDTO res = modelMapper.map(savedPg, PgPropertyRespDTO.class);
+	    res.setOwnerid(owner.getOwnerId());
+	    res.setOwnername(owner.getName());
+
+	    return res;
+	}
+
 	
 	//UPDATE PROPERTY
+//	@Override
+//	public PgPropertyRespDTO updatePgProperty(Long id,MultipartFile imageFile, PgPropertyReqDTO dto) {
+//		
+//		PgProperty pgproperty = pgPropertyDao.findByPgId(id)
+//				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
+//		
+//		//Image handling
+//		 if (imageFile != null && !imageFile.isEmpty()) {
+//		        try {
+//		            // Delete the old image file if it exists
+//		            String oldImagePath = pgproperty.getImagePath();
+//		            if (oldImagePath != null) {
+//		                File oldFile = new File(oldImagePath);
+//		                if (oldFile.exists()) oldFile.delete();
+//		            }
+//
+//		            // Clean file name to remove spaces/special chars
+//		            String original = imageFile.getOriginalFilename();
+//		            String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+//		            String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
+//
+//		            
+//		            // Save new image
+//		            String uploadDir = "uploads/images/pg_property/";
+//		            File dir = new File(uploadDir);
+//		            if (!dir.exists()) dir.mkdirs();
+//
+//		            //String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+//		            Path filePath = Paths.get(uploadDir + fileName);
+//		            Files.write(filePath, imageFile.getBytes());
+//
+//		            // Update image path in entity
+//		            pgproperty.setImagePath("uploads/images/pg_property/" + fileName);
+//		            
+//		        } catch (IOException e) {
+//		        	e.printStackTrace();
+//		            throw new RuntimeException("Failed to update image", e);
+//		        }
+//		 }
+//		
+//		modelMapper.map(dto,pgproperty);
+//		PgProperty updated =  pgPropertyDao.save(pgproperty);
+//		
+//		PgPropertyRespDTO res = modelMapper.map(updated, PgPropertyRespDTO.class);
+//		res.setOwnerid(updated.getOwner().getOwnerId());
+//		res.setOwnername(updated.getOwner().getName());
+//		
+//		return res;
+//	}
+	
+	
+	
 	@Override
-	public PgPropertyRespDTO updatePgProperty(Long id,MultipartFile imageFile, PgPropertyReqDTO dto) {
-		
-		PgProperty pgproperty = pgPropertyDao.findByPgId(id)
-				.orElseThrow(()->new ResourceNotFoundException("PG Not Found!"));
-		
-		//Image handling
-		 if (imageFile != null && !imageFile.isEmpty()) {
-		        try {
-		            // Delete the old image file if it exists
-		            String oldImagePath = pgproperty.getImagePath();
-		            if (oldImagePath != null) {
-		                File oldFile = new File(oldImagePath);
-		                if (oldFile.exists()) oldFile.delete();
-		            }
+	public PgPropertyRespDTO updatePgProperty(Long id, MultipartFile imageFile, PgPropertyReqDTO dto) {
+	    
+	    PgProperty pgproperty = pgPropertyDao.findByPgId(id)
+	            .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
 
-		            // Save new image
-		            String uploadDir = "uploads/images/pg_property/";
-		            File dir = new File(uploadDir);
-		            if (!dir.exists()) dir.mkdirs();
+	    // Image handling
+	    if (imageFile != null && !imageFile.isEmpty()) {
+	        try {
+	            // Delete old image file if it exists
+	            String oldImagePath = pgproperty.getImagePath();
+	            if (oldImagePath != null) {
+	                File oldFile = new File(System.getProperty("user.dir") + "/" + oldImagePath);
+	                if (oldFile.exists()) oldFile.delete();
+	            }
 
-		            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-		            Path filePath = Paths.get(uploadDir + fileName);
-		            Files.write(filePath, imageFile.getBytes());
+	            // Clean new file name
+	            String original = imageFile.getOriginalFilename();
+	            String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+	            String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
 
-		            // Update image path in entity
-		            pgproperty.setImagePath(uploadDir + fileName);
+	            // Save new image
+	            String uploadDir = System.getProperty("user.dir") + "/uploads/images/pg_property/";
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
 
-		        } catch (IOException e) {
-		            throw new RuntimeException("Failed to update image", e);
-		        }
-		 }
-		
-		modelMapper.map(dto,pgproperty);
-		PgProperty updated =  pgPropertyDao.save(pgproperty);
-		
-		PgPropertyRespDTO res = modelMapper.map(updated, PgPropertyRespDTO.class);
-		res.setOwnerid(updated.getOwner().getOwnerId());
-		res.setOwnername(updated.getOwner().getName());
-		
-		return res;
+	            Path filePath = Paths.get(uploadDir, fileName);
+	            Files.write(filePath, imageFile.getBytes());
+
+	            // Update relative path in DB
+	            pgproperty.setImagePath("uploads/images/pg_property/" + fileName);
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            throw new RuntimeException("Failed to update image", e);
+	        }
+	    }
+
+	    // Update other fields
+	    modelMapper.map(dto, pgproperty);
+	    PgProperty updated = pgPropertyDao.save(pgproperty);
+
+	    // Prepare response DTO
+	    PgPropertyRespDTO res = modelMapper.map(updated, PgPropertyRespDTO.class);
+	    res.setOwnerid(updated.getOwner().getOwnerId());
+	    res.setOwnername(updated.getOwner().getName());
+
+	    return res;
 	}
+
 
 
 	//DELTE PROPERTY
@@ -273,92 +378,252 @@ public class OwnerServiceImpl implements OwnerService{
 	//----------ROOMS-----------
 
 	//ADD ADD ROOM TO PGPROPERTY
+//	@Override
+//	public RoomRespDTO addRoomToPg(Long pgId,MultipartFile imageFile, @Valid RoomReqDTO roomDto) {
+////		PgProperty pg = pgPropertyDao.findByPgId(pgId)
+////				.orElseThrow(()-> new ResourceNotFoundException("PG Not Found!"));
+//		
+//		PgProperty pg = pgPropertyDao.findById(pgId)
+//		        .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
+//
+//		Room room = modelMapper.map(roomDto, Room.class);
+//		room.setPgproperty(pg);
+//		
+//		//Image handling
+//		 if (imageFile != null && !imageFile.isEmpty()) {
+//		        try {
+//		            // Generate a unique file name
+//		            //String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+//		            //String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
+//		            
+//		        	String uploadDir = "D:/cdac/Project/PGVerse_proj/PGVerse/PGVerse/PGVerse/uploads/images/rooms/";
+//		        	
+//		        	File dir = new File(uploadDir);
+//		        	if (!dir.exists()) dir.mkdirs();
+//		        	
+//		        	String original = imageFile.getOriginalFilename();
+//		            String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+//		            String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
+//
+////		            String uploadDir = "uploads/images/rooms/";
+////		        	File dir = new File(uploadDir);
+////		            if (!dir.exists()) dir.mkdirs();
+//		            
+//
+//		            File fileToSave = new File(dir, fileName);
+//		            imageFile.transferTo(fileToSave);
+////		            File destination = new File(uploadDir + fileName);
+////		            imageFile.transferTo(destination);
+//
+//		            File savedFile = new File(uploadDir, fileName);
+//		            imageFile.transferTo(savedFile);
+//		            // Set image path to entity
+//		            room.setImagePath("uploads/images/rooms/" + fileName);
+//
+//		        } catch (IOException e) {
+//		        	e.printStackTrace();
+//		            throw new RuntimeException("Image upload failed!", e);
+//		        }
+//		    }
+//		 
+//		Room savedRoom = roomDao.save(room);
+//		pg.getRooms().add(savedRoom);
+//		
+//		pgPropertyDao.save(pg);
+//		
+//		RoomRespDTO dto = modelMapper.map(savedRoom, RoomRespDTO.class);
+//		dto.setPgId(savedRoom.getPgproperty().getPgId());
+//		dto.setPgName(savedRoom.getPgproperty().getName());
+//		
+//		return  dto;
+//	}
+
+	
+//	@Override
+//	public RoomRespDTO addRoomToPg(Long pgId, MultipartFile imageFile, @Valid RoomReqDTO roomDto) {
+//	    PgProperty pg = pgPropertyDao.findById(pgId)
+//	            .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
+//
+//	    Room room = modelMapper.map(roomDto, Room.class);
+//	    room.setPgproperty(pg);
+//
+//	    // Image handling
+//	    if (imageFile != null && !imageFile.isEmpty()) {
+//	        try {
+//	            String uploadDir = "D:/cdac/Project/PGVerse_proj/PGVerse/PGVerse/PGVerse/uploads/images/rooms/";
+//	            File dir = new File(uploadDir);
+//	            if (!dir.exists()) dir.mkdirs();
+//
+//	            String original = imageFile.getOriginalFilename();
+//	            String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+//	            String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
+//
+//	            File fileToSave = new File(dir, fileName);
+//	            imageFile.transferTo(fileToSave);
+//
+//	            // Save relative path for access via resource handler
+//	            room.setImagePath("uploads/images/rooms/" + fileName);
+//
+//	        } catch (IOException e) {
+//	            e.printStackTrace();
+//	            throw new RuntimeException("Image upload failed!", e);
+//	        }
+//	    }
+//
+//	    Room savedRoom = roomDao.save(room);
+//	    pg.getRooms().add(savedRoom);
+//	    pgPropertyDao.save(pg);
+//
+//	    RoomRespDTO dto = modelMapper.map(savedRoom, RoomRespDTO.class);
+//	    dto.setPgId(savedRoom.getPgproperty().getPgId());
+//	    dto.setPgName(savedRoom.getPgproperty().getName());
+//
+//	    return dto;
+//	}
+
+	
 	@Override
-	public RoomRespDTO addRoomToPg(Long pgId,MultipartFile imageFile, @Valid RoomReqDTO roomDto) {
-//		PgProperty pg = pgPropertyDao.findByPgId(pgId)
-//				.orElseThrow(()-> new ResourceNotFoundException("PG Not Found!"));
-		
-		PgProperty pg = pgPropertyDao.findById(pgId)
-		        .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
+	public RoomRespDTO addRoomToPg(Long pgId, MultipartFile imageFile, @Valid RoomReqDTO roomDto) {
+	    PgProperty pg = pgPropertyDao.findById(pgId)
+	            .orElseThrow(() -> new ResourceNotFoundException("PG Not Found!"));
 
-		Room room = modelMapper.map(roomDto, Room.class);
-		room.setPgproperty(pg);
-		
-		//Image handling
-		 if (imageFile != null && !imageFile.isEmpty()) {
-		        try {
-		            // Generate a unique file name
-		            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-		            String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
-		            File dir = new File(uploadDir);
-		            if (!dir.exists()) dir.mkdirs();
+	    Room room = modelMapper.map(roomDto, Room.class);
+	    room.setPgproperty(pg);
 
-		            File destination = new File(uploadDir + fileName);
-		            imageFile.transferTo(destination);
+	    // Image handling
+	    if (imageFile != null && !imageFile.isEmpty()) {
+	        try {
+	            // Build dynamic upload directory using project root
+	            String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
+	            File dir = new File(uploadDir);
+	            if (!dir.exists()) dir.mkdirs();
 
-		            // Set image path to entity
-		            room.setImagePath(fileName);
-		        } catch (IOException e) {
-		            throw new RuntimeException("Image upload failed!", e);
-		        }
-		    }
-		 
-		Room savedRoom = roomDao.save(room);
-		pg.getRooms().add(savedRoom);
-		
-		pgPropertyDao.save(pg);
-		
-		RoomRespDTO dto = modelMapper.map(savedRoom, RoomRespDTO.class);
-		dto.setPgId(savedRoom.getPgproperty().getPgId());
-		dto.setPgName(savedRoom.getPgproperty().getName());
-		
-		return  dto;
+	            // Clean filename and generate unique name
+	            String original = imageFile.getOriginalFilename();
+	            String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+	            String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
+
+	            // Save image
+	            File fileToSave = new File(dir, fileName);
+	            imageFile.transferTo(fileToSave);
+
+	            // Store relative path for frontend use
+	            room.setImagePath("uploads/images/rooms/" + fileName);
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            throw new RuntimeException("Image upload failed!", e);
+	        }
+	    }
+
+	    Room savedRoom = roomDao.save(room);
+	    pg.getRooms().add(savedRoom);
+	    pgPropertyDao.save(pg);
+
+	    RoomRespDTO dto = modelMapper.map(savedRoom, RoomRespDTO.class);
+	    dto.setPgId(savedRoom.getPgproperty().getPgId());
+	    dto.setPgName(savedRoom.getPgproperty().getName());
+
+	    return dto;
 	}
 
 
 	//UPDATE ROOM BY ROOMID
+//	@Override
+//	public RoomRespDTO updateRoom(Long roomId, MultipartFile imageFile, RoomReqDTO roomDto) {
+//		
+//		Room room = roomDao.findByRoomId(roomId)
+//				.orElseThrow(()-> new ResourceNotFoundException("Room not Found!"));
+//		
+//		modelMapper.map(roomDto, room);
+//		
+//		if (imageFile != null && !imageFile.isEmpty()) {
+//		    try {
+//		       
+//		        String oldImagePath = room.getImagePath();
+//		        if (oldImagePath != null) {
+//	                File oldFile = new File(System.getProperty("user.dir") + "/uploads/images/rooms/" + oldImagePath);
+//	                if (oldFile.exists()) oldFile.delete();
+//	            }
+//
+//		        String original = imageFile.getOriginalFilename();
+//	            String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+//	            String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
+//
+//		        
+//		        //String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
+//	            String uploadDir = "uploads/images/rooms/";
+//	            File dir = new File(uploadDir);
+//	            if (!dir.exists()) dir.mkdirs();
+//
+//		        
+//	            //String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
+//	            Path filePath = Paths.get(uploadDir, fileName);
+//	            Files.write(filePath, imageFile.getBytes());
+//
+//		    
+//		        room.setImagePath("uploads/images/rooms/" + fileName);
+//
+//		    } catch (IOException e) {
+//		        throw new RuntimeException("Failed to update room image", e);
+//		    }
+//		}
+//
+//		Room updatedRoom = roomDao.save(room);
+//		
+//		RoomRespDTO dto = modelMapper.map(updatedRoom, RoomRespDTO.class);
+//		dto.setPgId(updatedRoom.getPgproperty().getPgId());
+//		dto.setPgName(updatedRoom.getPgproperty().getName());
+//		
+//		return dto;
+//	}
+
+	
 	@Override
 	public RoomRespDTO updateRoom(Long roomId, MultipartFile imageFile, RoomReqDTO roomDto) {
-		
-		Room room = roomDao.findByRoomId(roomId)
-				.orElseThrow(()-> new ResourceNotFoundException("Room not Found!"));
-		
-		modelMapper.map(roomDto, room);
-		
-		if (imageFile != null && !imageFile.isEmpty()) {
-		    try {
-		       
-		        String oldImagePath = room.getImagePath();
-		        if (oldImagePath != null) {
-	                File oldFile = new File(System.getProperty("user.dir") + "/uploads/images/rooms/" + oldImagePath);
+
+	    Room room = roomDao.findByRoomId(roomId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Room not Found!"));
+
+	    modelMapper.map(roomDto, room);
+
+	    if (imageFile != null && !imageFile.isEmpty()) {
+	        try {
+	            // Delete old image if exists
+	            String oldImagePath = room.getImagePath();
+	            if (oldImagePath != null && !oldImagePath.isBlank()) {
+	                File oldFile = new File(System.getProperty("user.dir") + "/" + oldImagePath);
 	                if (oldFile.exists()) oldFile.delete();
 	            }
 
-		       
-		        String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
+	            // Clean and generate new file name
+	            String original = imageFile.getOriginalFilename();
+	            String cleanedName = original.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+	            String fileName = UUID.randomUUID().toString() + "_" + cleanedName;
+
+	            // Create directory and save new image
+	            String uploadDir = System.getProperty("user.dir") + "/uploads/images/rooms/";
 	            File dir = new File(uploadDir);
 	            if (!dir.exists()) dir.mkdirs();
 
-		        
-	            String fileName = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
 	            Path filePath = Paths.get(uploadDir, fileName);
 	            Files.write(filePath, imageFile.getBytes());
 
-		    
-		        room.setImagePath(uploadDir + fileName);
+	            // Store relative path in DB
+	            room.setImagePath("uploads/images/rooms/" + fileName);
 
-		    } catch (IOException e) {
-		        throw new RuntimeException("Failed to update room image", e);
-		    }
-		}
+	        } catch (IOException e) {
+	            throw new RuntimeException("Failed to update room image", e);
+	        }
+	    }
 
-		Room updatedRoom = roomDao.save(room);
-		
-		RoomRespDTO dto = modelMapper.map(updatedRoom, RoomRespDTO.class);
-		dto.setPgId(updatedRoom.getPgproperty().getPgId());
-		dto.setPgName(updatedRoom.getPgproperty().getName());
-		
-		return dto;
+	    Room updatedRoom = roomDao.save(room);
+
+	    RoomRespDTO dto = modelMapper.map(updatedRoom, RoomRespDTO.class);
+	    dto.setPgId(updatedRoom.getPgproperty().getPgId());
+	    dto.setPgName(updatedRoom.getPgproperty().getName());
+
+	    return dto;
 	}
 
 
