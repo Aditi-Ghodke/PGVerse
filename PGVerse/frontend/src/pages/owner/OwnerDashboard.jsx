@@ -15,16 +15,20 @@ import {
   getAllRooms, 
   getRoomById,
   addService, 
-  getServicesByPgId,
+  getRequestedServicesByPgId,
   manuallyUpdateBookings,
   getReviewByPgId,
-  getBookingsByPgId
+  getBookingsByPgId,
+  getServicesByPgId,
+  
 } from "../../api/ownerApi";
 
 const OwnerDashboard = () => {
   const token = localStorage.getItem("token");
   const ownerId = localStorage.getItem("id");
   const ownerEmail = localStorage.getItem("email");
+
+  const imageBaseUrl = "http://localhost:8080/";
 
   // Get current view from OwnerLayout
   const { view } = useOutletContext();
@@ -74,17 +78,21 @@ const OwnerDashboard = () => {
   const [pgIdInput, setPgIdInput] = useState("");
   const [pgDetails, setPgDetails] = useState(null);
 
-  const fetchPgById = async () => {
-    try {
-      const res = await getPropertyById(pgIdInput, token);
-      setPgDetails(res.data);
-      setPgError("");
-    } catch (err) {
-      console.error("Error fetching PG by ID:", err);
-      setPgDetails(null);
-      setPgError("PG not found");
-    }
-  };
+  const [showPgModal, setShowPgModal] = useState(false);
+
+  const fetchPgById = async (id) => {
+  try {
+    const res = await getPropertyById(id, token);
+    setPgDetails(res.data);
+    setPgError("");
+    setShowPgModal(true); // Show modal on success
+  } catch (err) {
+    console.error("Error fetching PG by ID:", err);
+    setPgDetails(null);
+    setPgError("PG not found");
+    setShowPgModal(false);
+  }
+};
 
 
 
@@ -306,6 +314,8 @@ const OwnerDashboard = () => {
       }
     };
 
+    const [showRoomDetails, setShowRoomDetails] = useState(false);
+
   
       // UPDATE ROOM
         const [roomUpdateData, setRoomUpdateData] = useState({
@@ -330,28 +340,37 @@ const OwnerDashboard = () => {
           setRoomUpdateImage(e.target.files[0]);
         };
 
-        const handleUpdateRoom = async () => {
-        try {
-          await updateRoom(roomIdToUpdate, roomUpdateData, roomUpdateImage, token);
-          setRoomUpdateMsg("Room updated successfully!");
-          setRoomUpdateError("");
-          setRoomIdToUpdate("");
-          setRoomUpdateImage(null);
-          setRoomUpdateData({
-            roomNumber: "",
-            capacity: 1,
-            floor: 0,
-            currentOccupancy: 0,
-            pricePerMonth: "",
-            status: "AVAILABLE",
-          });
-        } catch (err) {
-          console.error("Error updating room:", err);
-          const errMsg = err.response?.data?.message || "Failed to update room.";
-          setRoomUpdateError(errMsg);
-          setRoomUpdateMsg("");
-        }
-      };
+       const handleUpdateRoom = async () => {
+  try {
+    if (!roomIdToUpdate) {
+      setRoomUpdateError("No room selected for update.");
+      return;
+    }
+
+    await updateRoom(roomIdToUpdate, roomUpdateData, roomUpdateImage, token);
+
+    setRoomUpdateMsg("Room updated successfully!");
+    setRoomUpdateError("");
+    setRoomIdToUpdate(""); // clear selection
+    setRoomUpdateImage(null); // clear file
+    setRoomUpdateData({
+      roomNumber: "",
+      capacity: 1,
+      floor: 0,
+      currentOccupancy: 0,
+      pricePerMonth: "",
+      status: "AVAILABLE",
+    });
+
+    handleFetchAllRooms(); // refresh the table
+  } catch (err) {
+    console.error("Error updating room:", err);
+    const errMsg = err.response?.data?.message || "Failed to update room.";
+    setRoomUpdateError(errMsg);
+    setRoomUpdateMsg("");
+  }
+};
+
 
 
 
@@ -398,6 +417,31 @@ const OwnerDashboard = () => {
         }
       };
 
+      const fetchOwnerAndPg = async () => {
+      try {
+        const ownerRes = await getOwnerById(ownerId, token);
+        setOwnerData(ownerRes.data);
+
+        setEditForm({
+          name: ownerRes.data.name || "",
+          email: ownerRes.data.email || "",
+          phone: ownerRes.data.phone || "",
+          gender: ownerRes.data.gender || "",
+          address: ownerRes.data.address || "",
+          card: ownerRes.data.card || "",
+        });
+
+        const pgRes = await getPgByOwnerId(ownerId, token);
+        setPgList(pgRes.data || []);
+
+        console.log("Fetched PG List:", pgRes.data); // <--- add here
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load owner or PG properties.");
+      }
+    };
+
+
 
 
       //SERVICES
@@ -425,15 +469,32 @@ const OwnerDashboard = () => {
         }
       };
 
-      const handleGetServicesByPgId = async () => {
-        try {
-          const res = await getServicesByPgId(pgIdForServices, token);
-          setServicesList(res.data);
-        } catch (error) {
-          console.error("Error fetching services:", error);
-          setServicesList([]);
-        }
-      };
+      // const handleGetServicesByPgId = async () => {
+      //   try {
+      //     const res = await getServicesByPgId(pgIdForServices, token);
+      //     setServicesList(res.data);
+      //   } catch (error) {
+      //     console.error("Error fetching services:", error);
+      //     setServicesList([]);
+      //   }
+      // };
+
+      const handleGetRequestedServicesByPgId = async () => {
+      if (!pgIdForServices) {
+        console.warn("PG ID is not selected.");
+        return;
+      }
+
+      try {
+        console.log("Fetching services for PG ID:", pgIdForServices);
+        const res = await getRequestedServicesByPgId(pgIdForServices, token);
+        console.log("Fetched services:", res.data);
+        setServicesList(res.data);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+        setServicesList([]);
+      }
+    };
 
 
       //REVIEWS BOOKINGS
@@ -448,28 +509,35 @@ const OwnerDashboard = () => {
       const [updateBookingMsg, setUpdateBookingMsg] = useState("");
 
       // Fetch reviews for PG
-      const handleGetReviewsByPgId = async (pgId) => {
-        try {
-          const response = await getReviewByPgId(pgId, token);
-          setReviews(response.data);
-          setReviewError("");
-        } catch (error) {
-          setReviewError(error.response?.data?.message || "Failed to fetch reviews");
-          setReviews([]);
-        }
-      };
+     const handleGetReviewsByPgId = async (pgId) => {
+    console.log("Fetching reviews for PG ID:", pgId);
+    try {
+      const response = await getReviewByPgId(pgId, token);
+      console.log("Reviews received:", response.data); // Add this
+      setReviews(response.data);
+      setReviewError("");
+    } catch (error) {
+      console.error("Review fetch failed:", error); // Add this
+      setReviewError(error.response?.data?.message || "Failed to fetch reviews");
+      setReviews([]);
+    }
+  };
+
 
       // Fetch bookings for PG
       const handleGetBookingsByPgId = async (pgId) => {
-        try {
-          const response = await getBookingsByPgId(pgId, token);
-          setBookings(response.data);
-          setBookingError("");
-        } catch (error) {
-          setBookingError(error.response?.data?.message || "Failed to fetch bookings");
-          setBookings([]);
-        }
-      };
+      try {
+        const response = await getBookingsByPgId(pgId, token);
+        console.log("Bookings Response:", response.data); 
+        setBookings(response.data);
+        setBookingError("");
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        setBookingError(error.response?.data?.message || "Failed to fetch bookings");
+        setBookings([]);
+      }
+    };
+
 
       // Update bookings status manually
       const handleManuallyUpdateBookings = async () => {
@@ -489,6 +557,58 @@ const OwnerDashboard = () => {
           handleGetBookingsByPgId(pgIdForBookings);
         }
       }, [view, pgIdForReviews, pgIdForBookings]);
+
+      //services by pgid
+      
+      const [selectedPgId, setSelectedPgId] = useState(""); 
+
+      useEffect(() => {
+        const fetchServices = async () => {
+          try {
+            const token = localStorage.getItem("token");
+            const res = await getServicesByPgId(selectedPgId, token);
+             console.log("Fetched Rooms:", res.data); // 
+            setServicesList(res.data);  // Use res.data here
+          } catch (error) {
+            console.error("Error fetching services:", error);
+          }
+        };
+
+        if (selectedPgId) {
+          fetchServices();
+        }
+      }, [selectedPgId]);
+
+      useEffect(() => {
+  const fetchRooms = async () => {
+    if (!selectedPgId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await getAllRooms(selectedPgId, token);
+      setRoomList(res.data); // assuming response is a list of rooms
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+      setRoomList([]);
+    }
+  };
+
+  fetchRooms();
+}, [selectedPgId]);
+
+const getPgByIdFromBookings = (pgId) => {
+  const pgBooking = bookings.find(b => b.pgId === parseInt(pgId));
+  if (pgBooking) {
+    return {
+      pgId: pgBooking.pgId,
+      name: pgBooking.pgName,  // or pgBooking.name if that’s the key
+      // add any other PG info available in bookings
+    };
+  }
+  return null; // not found
+};
+
+const selectedPg = getPgByIdFromBookings(selectedPgId);
 
 
   return (
@@ -728,7 +848,7 @@ const OwnerDashboard = () => {
 
 
     {/*GET PG BY OWNER ID */}
-   
+
   {view === "getPgByOwnerId" && (
   <div className="bg-white p-4 rounded shadow">
     <h2 className="text-xl font-semibold mb-4">All PGs by You</h2>
@@ -741,16 +861,18 @@ const OwnerDashboard = () => {
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
-            <tr className="bg-gray-100 text-black">
-              <th className="px-4 py-2 border">ID</th>
-              <th className="px-4 py-2 border">Name</th>
-              <th className="px-4 py-2 border">Location</th>
-              <th className="px-4 py-2 border">Type</th>
-              <th className="px-4 py-2 border">Status</th>
-              <th className="px-4 py-2 border">Description</th>
-              <th className="px-4 py-2 border">Owner</th>
-            </tr>
-          </thead>
+          <tr className="bg-gray-100 text-black">
+            <th className="px-4 py-2 border">ID</th>
+            <th className="px-4 py-2 border">Name</th>
+            <th className="px-4 py-2 border">Location</th>
+            <th className="px-4 py-2 border">Type</th>
+            <th className="px-4 py-2 border">Status</th>
+            <th className="px-4 py-2 border">Description</th>
+            <th className="px-4 py-2 border">Owner</th>
+            <th className="px-4 py-2 border">Actions</th>
+          </tr>
+        </thead>
+
           <tbody className="text-black">
             {pgList.map((pg) => (
               <tr key={pg.pgId} className="text-center hover:bg-gray-50">
@@ -761,14 +883,88 @@ const OwnerDashboard = () => {
                 <td className="px-4 py-2 border">{pg.status}</td>
                 <td className="px-4 py-2 border">{pg.description}</td>
                 <td className="px-4 py-2 border">{pg.ownername}</td>
+                <td className="px-4 py-2 border">
+                  <button
+                    onClick={() => fetchPgById(pg.pgId)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    View
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
     )}
+
+    {/* PG DETAILS MODAL */}
+    {showPgModal && pgDetails && (
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+        <div className="bg-white rounded-xl p-6 w-11/12 max-w-xl relative">
+          <button
+            onClick={() => setShowPgModal(false)}
+            className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-lg font-bold"
+          >
+            ×
+          </button>
+          <h2 className="text-2xl font-semibold mb-4">PG Property Details</h2>
+          <div className="space-y-2 text-gray-800">
+            <p><strong>ID:</strong> {pgDetails.pgId}</p>
+            <p><strong>Name:</strong> {pgDetails.name}</p>
+            <p><strong>Location:</strong> {pgDetails.location}</p>
+            <p><strong>Type:</strong> {pgDetails.pgType}</p>
+            <p><strong>Status:</strong> {pgDetails.status}</p>
+            <p><strong>Description:</strong> {pgDetails.description}</p>
+            <p><strong>Owner ID:</strong> {pgDetails.ownerid}</p>
+            <p><strong>Owner Name:</strong> {pgDetails.ownername}</p>
+            {pgDetails.imagePath && (
+            <img
+              src={`http://localhost:8080/${pgDetails.imagePath}`}
+              alt={pgDetails.name}
+              className="w-full h-48 object-cover rounded mb-4"
+            />
+          )}
+          </div>
+        </div>
+      </div>
+    )}
   </div>
 )}
+
+
+
+    {/* PG Details Modal */}
+    {view === "viewPgDetails" && pgDetails && (
+      <div
+        className="fixed inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm z-50"
+        onClick={() => setView("getPgByOwnerId")} // click outside closes modal
+      >
+        <div
+          className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative"
+          onClick={(e) => e.stopPropagation()} // prevent modal close on inner click
+        >
+          <button
+            className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+            onClick={() => setView("getPgByOwnerId")}
+          >
+            ✖
+          </button>
+          <h2 className="text-2xl font-bold mb-4">{pgDetails.name}</h2>
+          <p><strong>ID:</strong> {pgDetails.pgId}</p>
+          <p><strong>Location:</strong> {pgDetails.location}</p>
+          <p><strong>Type:</strong> {pgDetails.pgType}</p>
+          <p><strong>Status:</strong> {pgDetails.status}</p>
+          <p><strong>Description:</strong> {pgDetails.description}</p>
+          <p><strong>Owner:</strong> {pgDetails.ownername}</p>
+          {/* Add any other fields */}
+        </div>
+      </div>
+    )}
+
+
+
+
 
       {/* OPTIONAL: Get PG By ID view if you want to enable manual fetch */}
       {view === "getPgById" && (
@@ -811,17 +1007,23 @@ const OwnerDashboard = () => {
       <div className="bg-white p-6 rounded shadow max-w-md mx-auto mt-6">
         <h2 className="text-2xl font-semibold mb-4">Add Room to PG</h2>
 
-        <label className="block mb-2 font-medium" htmlFor="pgIdForRoom">
-          PG ID
-        </label>
-        <input
-          type="text"
-          id="pgIdForRoom"
-          value={pgIdForRoom}
-          onChange={(e) => setPgIdForRoom(e.target.value)}
-          placeholder="Enter PG ID"
-          className="w-full mb-4 p-2 border rounded"
-        />
+       <label className="block mb-2 font-medium" htmlFor="pgIdForRoom">
+        Select PG
+      </label>
+      <select
+        id="pgIdForRoom"
+        value={pgIdForRoom}
+        onChange={(e) => setPgIdForRoom(e.target.value)}
+        className="w-full mb-4 p-2 border rounded"
+        required
+      >
+        <option value="">-- Select PG --</option>
+        {pgList.map((pg) => (
+          <option key={pg.pgId} value={pg.pgId}>
+            {pg.name}
+          </option>
+        ))}
+      </select>
 
         <label className="block mb-2 font-medium" htmlFor="roomNumber">
           Room Number
@@ -1065,7 +1267,7 @@ const OwnerDashboard = () => {
   </div>
 )}
 
-{view === "getAllRooms" && (
+{/* {view === "getAllRooms" && (
   <div className="bg-white p-4 border rounded mt-4">
     <label className="block mb-2">Enter PG ID</label>
     <input
@@ -1109,7 +1311,281 @@ const OwnerDashboard = () => {
       )}
     </div>
   </div>
+)} */}
+
+{view === "getAllRooms" && (
+ <div className="bg-white p-6 border border-gray-300 rounded-xl mt-6 shadow-lg max-w-7xl mx-auto">
+    <label className="block mb-3 text-lg font-semibold text-gray-700">Select PG</label>
+    <select
+      className="border border-gray-300 p-3 w-full rounded-md text-base mb-4"
+      value={pgIdForRooms}
+      onChange={(e) => setPgIdForRooms(e.target.value)}
+      required
+    >
+      <option value="">-- Select PG --</option>
+      {pgList.map((pg) => (
+        <option key={pg.pgId} value={pg.pgId}>
+          {pg.name}
+        </option>
+      ))}
+    </select>
+
+    <button
+      onClick={handleFetchAllRooms}
+      className="bg-blue-600 hover:bg-blue-700 text-white text-base px-5 py-2 rounded-md transition"
+      disabled={!pgIdForRooms}
+    >
+      Fetch Rooms
+    </button>
+
+
+    <div className="mt-4">
+      {roomList.length > 0 ? (
+        <>
+  <table className="w-full table-auto border border-gray-300 border-collapse mt-6 text-base rounded-md overflow-hidden shadow-sm">
+  <thead className="bg-gray-100">
+    <tr>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Room ID</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Room No</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Floor</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Capacity</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Current Occupancy</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Price</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Status</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">PG ID</th>
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">PG Name</th>
+      
+      <th className="border px-4 py-3 bg-gray-100 font-semibold text-left">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {roomList.map((room) => (
+      <tr key={room.roomId}>
+        <td className="border px-2 py-1">{room.roomId}</td>
+        <td className="border px-2 py-1">{room.roomNumber}</td>
+        <td className="border px-2 py-1">{room.floor}</td>
+        <td className="border px-2 py-1">{room.capacity}</td>
+        <td className="border px-2 py-1">{room.currentOccupancy || 0}</td>
+        <td className="border px-2 py-1">₹{room.pricePerMonth.toFixed(2)}</td>
+        <td className="border px-2 py-1">{room.status}</td>
+        <td className="border px-2 py-1">{room.pgId}</td>
+        <td className="border px-2 py-1">{room.pgName}</td>
+       
+        {/* <td className="border px-2 py-1">
+          {room.imagePath ? (
+            <img
+              src={`${imageBaseUrl}${room.imagePath}`}
+              alt={`Room ${room.roomNumber}`}
+              className="w-16 h-10 object-cover rounded"
+            />
+          ) : (
+            "No Image"
+          )}
+        </td> */}
+        <td className="border px-2 py-1 space-x-2">
+          <button
+            onClick={() => {
+              setRoomIdToUpdate(room.roomId);
+              setRoomUpdateData({
+                roomNumber: room.roomNumber,
+                capacity: room.capacity,
+                floor: room.floor,
+                currentOccupancy: room.currentOccupancy || 0,
+                pricePerMonth: room.pricePerMonth,
+                status: room.status,
+                pgId: room.pgId,
+                pgName: room.pgName,
+                imagePath: room.imagePath,
+              });
+            }}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md"
+          >
+            Edit
+          </button>
+          <button
+            onClick={async () => {
+              if (confirm("Are you sure you want to delete this room?")) {
+                await handleDeleteRoom(room.roomId);
+                handleFetchAllRooms(); // Refresh list after deletion
+              }
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md"
+          >
+            Delete
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                const res = await getRoomById(room.roomId, token); // token must be defined in your component
+                setFetchedRoom(res.data);
+                setShowRoomDetails(true);
+              } catch (err) {
+                console.error("Error fetching room details:", err);
+                setFetchedRoom(null);
+                setShowRoomDetails(false);
+                setRoomActionMsg("Room details not found.");
+              }
+            }}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md"
+          >
+            View
+          </button>
+        </td>
+            {showRoomDetails && fetchedRoom && (
+  <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/30">
+    <div className="bg-white rounded-xl shadow-2xl p-6 max-w-xl w-full relative">
+      <button
+        onClick={() => setShowRoomDetails(false)}
+        className="absolute top-3 right-4 text-gray-500 hover:text-black text-xl font-bold"
+      >
+        ×
+      </button>
+      <h2 className="text-2xl font-semibold mb-4 text-center text-gray-800">
+        Room Details (ID: {fetchedRoom.roomId})
+      </h2>
+      <div className="grid grid-cols-2 gap-4 text-gray-700">
+        <p><strong>Room No:</strong> {fetchedRoom.roomNumber}</p>
+        <p><strong>Floor:</strong> {fetchedRoom.floor}</p>
+        <p><strong>Capacity:</strong> {fetchedRoom.capacity}</p>
+        <p><strong>Occupancy:</strong> {fetchedRoom.currentOccupancy || 0}</p>
+        <p><strong>Price:</strong> ₹{fetchedRoom.pricePerMonth.toFixed(2)}</p>
+        <p><strong>Status:</strong> {fetchedRoom.status}</p>
+        <p><strong>PG ID:</strong> {fetchedRoom.pgId}</p>
+        <p><strong>PG Name:</strong> {fetchedRoom.pgName}</p>
+      </div>
+      {fetchedRoom.imagePath && (
+        <div className="mt-4 text-center">
+          <img
+            src={`${imageBaseUrl}${fetchedRoom.imagePath}`}
+            alt={`Room ${fetchedRoom.roomNumber}`}
+            className="w-64 h-40 object-cover rounded mx-auto"
+          />
+        </div>
+      )}
+    </div>
+  </div>
 )}
+
+
+      </tr>
+    ))}
+  </tbody>
+          </table>
+
+
+          {/* UPDATE FORM SECTION */}
+          {roomIdToUpdate && (
+            <div className="mt-6 bg-gray-50 border p-4 rounded">
+              <h2 className="text-lg font-semibold mb-2">Update Room</h2>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleUpdateRoom();
+                  handleFetchAllRooms(); // Refresh list after update
+                  setRoomIdToUpdate(""); // Close update form
+                }}
+                className="space-y-3"
+              >
+                <input
+                  type="text"
+                  placeholder="Room Number"
+                  value={roomUpdateData.roomNumber}
+                  onChange={(e) =>
+                    setRoomUpdateData({
+                      ...roomUpdateData,
+                      roomNumber: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+                <input
+                  type="number"
+                  placeholder="Floor"
+                  value={roomUpdateData.floor}
+                  onChange={(e) =>
+                    setRoomUpdateData({
+                      ...roomUpdateData,
+                      floor: Number(e.target.value),
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+                <input
+                  type="number"
+                  placeholder="Capacity"
+                  value={roomUpdateData.capacity}
+                  onChange={(e) =>
+                    setRoomUpdateData({
+                      ...roomUpdateData,
+                      capacity: Number(e.target.value),
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+                <input
+                  type="number"
+                  placeholder="Price per Month"
+                  value={roomUpdateData.pricePerMonth}
+                  onChange={(e) =>
+                    setRoomUpdateData({
+                      ...roomUpdateData,
+                      pricePerMonth: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                />
+                <select
+                  value={roomUpdateData.status}
+                  onChange={(e) =>
+                    setRoomUpdateData({
+                      ...roomUpdateData,
+                      status: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="AVAILABLE">Available</option>
+                  <option value="OCCUPIED">Occupied</option>
+                  <option value="MAINTENANCE">Maintenance</option>
+                </select>
+
+                <input
+                  type="file"
+                  onChange={(e) => setRoomUpdateImage(e.target.files[0])}
+                  className="w-full p-2 border rounded"
+                />
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    className="bg-green-500 text-white px-4 py-2 rounded"
+                  >
+                    Update Room
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRoomIdToUpdate("")}
+                    className="bg-gray-500 text-white px-4 py-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                {roomUpdateMsg && <p className="text-green-600">{roomUpdateMsg}</p>}
+                {roomUpdateError && (
+                  <p className="text-red-600">{roomUpdateError}</p>
+                )}
+              </form>
+            </div>
+          )}
+        </>
+      ) : (
+        <p className="text-gray-500 mt-2">{roomActionMsg}</p>
+      )}
+    </div>
+  </div>
+)}
+
 
 {view === "deleteRoom" && (
   <div className="bg-white p-4 border rounded mt-4">
@@ -1163,17 +1639,40 @@ const OwnerDashboard = () => {
       className="w-full p-2 border rounded mb-3"
       required
     />
+
+    <label className="block mb-1">Select PG</label>
+    <select
+      value={selectedPgId}
+      onChange={(e) => setSelectedPgId(e.target.value)}
+      className="w-full p-2 border rounded mb-3"
+    >
+      <option value="">Select a PG</option>
+      {pgList.map((pg) => (
+        <option key={pg.pgId} value={pg.pgId}>
+          {pg.name}
+        </option>
+      ))}
+    </select>
+
     
-    <label className="block mb-1">Room ID</label>
-    <input
-      type="number"
+   <label className="block mb-1">Room</label>
+    <select
       name="roomId"
       value={serviceData.roomId}
       onChange={handleServiceInputChange}
-      min={1}
       className="w-full p-2 border rounded mb-3"
       required
-    />
+    >
+      <option value="">Select a Room</option>
+      {roomList.map((room) => (
+        <option key={room.roomId} value={room.roomId}>
+          Room {room.roomId} (Floor {room.floor})
+        </option>
+      ))}
+    </select>
+
+
+
 
     <button
       onClick={handleAddService}
@@ -1187,41 +1686,86 @@ const OwnerDashboard = () => {
   </div>
 )}
 
-{view === "getServicesByPgId" && (
-  <div className="bg-white p-4 rounded shadow mt-4">
-    <h2 className="text-lg font-semibold mb-3">View Services by PG ID</h2>
-    <input
-      type="text"
-      placeholder="Enter PG ID"
+  {view === "getRequestedServicesByPgId" && (
+  <div className="bg-white p-4 rounded shadow mt-4 max-w-3xl mx-auto">
+    <h2 className="text-lg font-semibold mb-4 text-center">
+      View Services by PG
+    </h2>
+
+    {/* PG Dropdown */}
+    <label className="block mb-2 font-medium text-gray-700">Select PG</label>
+    <select
+      className="w-full p-2 border rounded mb-3"
       value={pgIdForServices}
       onChange={(e) => setPgIdForServices(e.target.value)}
-      className="w-full p-2 border rounded mb-3"
-    />
+    >
+      <option value="">-- Select PG --</option>
+      {pgList.map((pg) => (
+        <option key={pg.pgId} value={pg.pgId}>
+          {pg.name}
+        </option>
+      ))}
+    </select>
+
+    {/* Fetch Button */}
     <button
-      onClick={handleGetServicesByPgId}
-      className="bg-indigo-600 text-white px-4 py-2 rounded"
+      onClick={handleGetRequestedServicesByPgId}
+      className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+      disabled={!pgIdForServices}
     >
       Fetch Services
     </button>
 
+
     {servicesList.length > 0 ? (
-      <ul className="mt-4 list-disc list-inside">
-        {servicesList.map((service) => (
-          <li key={service.serviceId}>
-            <strong>{service.serviceName}</strong>: {service.description}
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p className="mt-4 text-gray-600">No services found.</p>
-    )}
+  <div className="mt-6 space-y-4">
+    {servicesList.map((service) => (
+      <div
+        key={service.serviceId}
+        className="border rounded p-4 shadow-sm bg-gray-50"
+      >
+        <h3 className="text-lg font-semibold text-indigo-700 mb-1">
+          {service.serviceName} (Service ID: {service.serviceId})
+        </h3>
+
+        <p className="text-gray-700 mb-1">
+          <strong>Description:</strong> {service.serviceDescription}
+        </p>
+
+        <p className="text-gray-700 mb-1">
+          <strong>Price:</strong> ₹{service.servicePrice.toFixed(2)}
+        </p>
+
+        <p className="text-gray-700 mb-1">
+          <strong>PG:</strong> {service.pgName} (ID: {service.pgId})
+        </p>
+
+        <p className="text-gray-700 mb-1">
+          <strong>Room ID:</strong> {service.roomId || "N/A"}
+        </p>
+
+        <p className="text-gray-700 mb-1">
+          <strong>User:</strong> {service.userName} (User ID: {service.userId})
+        </p>
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="mt-4 text-gray-600">No services found.</p>
+)}
+
+
   </div>
 )}
+
+
+
+
 
     {/* REVIEWS */}
 
     {/* Dropdown to choose PG ID for Reviews */}
-{view === "getReviewsByPgId" && (
+    {view === "getReviewsByPgId" && (
   <div className="mb-4">
     <label className="block font-medium mb-1">Select PG for Reviews:</label>
     <select
@@ -1244,69 +1788,182 @@ const OwnerDashboard = () => {
     >
       Get Reviews
     </button>
+
+    {/* Show reviews below the button */}
+    {reviews.length > 0 && (
+      <div className="mt-4 bg-white p-5 border rounded max-h-[400px] overflow-y-auto">
+        <h2 className="text-lg font-semibold mb-3">Reviews:</h2>
+        {reviews.map((review) => (
+          <div key={review.reviewId} className="border rounded p-3 mb-3">
+            <p><strong>Rating:</strong> {review.rating}</p>
+            <p><strong>Comment:</strong> {review.comment}</p>
+            <p><strong>Date:</strong> {review.feedbackDate}</p>
+            <p><strong>User ID:</strong> {review.userId}</p>
+            <p><strong>User Name:</strong> {review.userName}</p>
+            <p><strong>PG ID:</strong> {review.pgPropertyid}</p>
+            <p><strong>PG Name:</strong> {review.pgPropertyName}</p>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {reviewError && (
+      <p className="text-red-600 mt-2">{reviewError}</p>
+    )}
   </div>
 )}
 
 
+
         {/* BOOKINGS */}
       {view === "getBookingsByPgId" && (
-  <div className="p-4 bg-white rounded shadow overflow-x-auto">
-    <h2 className="text-xl font-semibold mb-4">Bookings</h2>
-    {bookingError && <p className="text-red-600 mb-2">{bookingError}</p>}
-    {bookings.length === 0 ? (
-      <p>No bookings found.</p>
-    ) : (
-      <table className="min-w-full border border-gray-300 table-auto">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="px-4 py-2 border">Booking ID</th>
-            <th className="px-4 py-2 border">Booking Date</th>
-            <th className="px-4 py-2 border">Status</th>
-            <th className="px-4 py-2 border">Check-In Date</th>
-            <th className="px-4 py-2 border">Check-Out Date</th>
-            <th className="px-4 py-2 border">Room ID</th>
-            <th className="px-4 py-2 border">PG Property ID</th>
-            <th className="px-4 py-2 border">PG Property Name</th>
-            <th className="px-4 py-2 border">User ID</th>
-            <th className="px-4 py-2 border">User Name</th>
-            <th className="px-4 py-2 border">Payment ID</th>
-            <th className="px-4 py-2 border">Amount</th>
-            <th className="px-4 py-2 border">Payment Status</th>
-            <th className="px-4 py-2 border">Payment Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bookings.map((booking) => (
-            <tr key={booking.bookingId} className="text-center">
-              <td className="px-4 py-2 border">{booking.bookingId}</td>
-              <td className="px-4 py-2 border">
-                {booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : "N/A"}
-              </td>
-              <td className="px-4 py-2 border">{booking.status || "N/A"}</td>
-              <td className="px-4 py-2 border">
-                {booking.checkInDate ? new Date(booking.checkInDate).toLocaleDateString() : "N/A"}
-              </td>
-              <td className="px-4 py-2 border">
-                {booking.checkOutDate ? new Date(booking.checkOutDate).toLocaleDateString() : "N/A"}
-              </td>
-              <td className="px-4 py-2 border">{booking.roomId || "N/A"}</td>
-              <td className="px-4 py-2 border">{booking.pgPropertId || "N/A"}</td>
-              <td className="px-4 py-2 border">{booking.pgPropertyName || "N/A"}</td>
-              <td className="px-4 py-2 border">{booking.userId || "N/A"}</td>
-              <td className="px-4 py-2 border">{booking.userName || "N/A"}</td>
-              <td className="px-4 py-2 border">{booking.paymentId || "N/A"}</td>
-              <td className="px-4 py-2 border">{booking.amount != null ? booking.amount.toFixed(2) : "N/A"}</td>
-              <td className="px-4 py-2 border">{booking.paymentStatus || "N/A"}</td>
-              <td className="px-4 py-2 border">
-                {booking.paymentDate ? new Date(booking.paymentDate).toLocaleString() : "N/A"}
-              </td>
+  <div className="p-4 bg-white rounded shadow mt-4">
+    <h2 className="text-xl font-semibold mb-4">Bookings By PG</h2>
+
+    {/* PG Dropdown */}
+    <div className="mb-4">
+      <label className="block font-medium mb-1">Select PG for Bookings:</label>
+      <select
+        className="border p-2 rounded w-full"
+        value={pgIdForBookings}
+        onChange={(e) => setPgIdForBookings(e.target.value)}
+      >
+        <option value="">Select PG</option>
+        {pgList.map((pg) => (
+          <option key={pg.pgId} value={pg.pgId}>
+            {pg.name}
+          </option>
+        ))}
+      </select>
+
+      {/* <button
+        onClick={() => handleGetBookingsByPgId(pgIdForBookings)}
+        disabled={!pgIdForBookings}
+        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        Get Bookings
+      </button> */}
+    </div>
+
+    {/* Table */}
+    <div className="overflow-x-auto">
+      {bookingError && <p className="text-red-600 mb-2">{bookingError}</p>}
+      {bookings.length === 0 ? (
+        <p>No bookings found.</p>
+      ) : (
+        <table className="min-w-full border border-gray-300 table-auto">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="px-4 py-2 border">Booking ID</th>
+              <th className="px-4 py-2 border">Booking Date</th>
+              <th className="px-4 py-2 border">Status</th>
+              <th className="px-4 py-2 border">Check-In Date</th>
+              <th className="px-4 py-2 border">Check-Out Date</th>
+              <th className="px-4 py-2 border">Room ID</th>
+              <th className="px-4 py-2 border">PG Property ID</th>
+              <th className="px-4 py-2 border">PG Property Name</th>
+              <th className="px-4 py-2 border">User ID</th>
+              <th className="px-4 py-2 border">User Name</th>
+              <th className="px-4 py-2 border">Payment ID</th>
+              <th className="px-4 py-2 border">Amount</th>
+              <th className="px-4 py-2 border">Payment Status</th>
+              <th className="px-4 py-2 border">Payment Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    )}
-  </div>
+          </thead>
+          <tbody>
+            {bookings.map((booking) => (
+              <tr key={booking.bookingId} className="text-center">
+                <td className="px-4 py-2 border">{booking.bookingId}</td>
+                <td className="px-4 py-2 border">
+                  {booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : "N/A"}
+                </td>
+                <td className="px-4 py-2 border">{booking.status || "N/A"}</td>
+                <td className="px-4 py-2 border">
+                  {booking.checkInDate ? new Date(booking.checkInDate).toLocaleDateString() : "N/A"}
+                </td>
+                <td className="px-4 py-2 border">
+                  {booking.checkOutDate ? new Date(booking.checkOutDate).toLocaleDateString() : "N/A"}
+                </td>
+                <td className="px-4 py-2 border">{booking.roomId || "N/A"}</td>
+                <td className="px-4 py-2 border">{booking.pgPropertId || "N/A"}</td>
+                <td className="px-4 py-2 border">{booking.pgPropertyName || "N/A"}</td>
+                <td className="px-4 py-2 border">{booking.userId || "N/A"}</td>
+                <td className="px-4 py-2 border">{booking.userName || "N/A"}</td>
+                <td className="px-4 py-2 border">{booking.paymentId || "N/A"}</td>
+                <td className="px-4 py-2 border">
+                  {booking.amount != null ? booking.amount.toFixed(2) : "N/A"}
+                </td>
+                <td className="px-4 py-2 border">{booking.paymentStatus || "N/A"}</td>
+                <td className="px-4 py-2 border">
+                  {booking.paymentDate ? new Date(booking.paymentDate).toLocaleString() : "N/A"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
+    </div>
+  </div>
+)}
+
+
+{view === "getServicesByPgId" && (
+  <div className="bg-white p-6 rounded shadow mt-6">
+    <h2 className="text-xl font-bold mb-4 text-indigo-800">View Added Services</h2>
+
+    {/* PG Dropdown */}
+    <label className="block mb-2 font-medium text-gray-700">Select PG</label>
+    <select
+      className="border p-2 w-full rounded mb-6"
+      value={selectedPgId}
+      onChange={(e) => setSelectedPgId(e.target.value)}
+    >
+      <option value="">-- Select PG --</option>
+      {pgList.map((pg) => (
+        <option key={pg.pgId} value={pg.pgId}>
+          {pg.name}
+        </option>
+      ))}
+    </select>
+
+    {/* Service List */}
+    {servicesList.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {servicesList.map((service) => (
+          <div
+            key={service.serviceId}
+            className="border rounded-xl p-4 shadow-sm bg-gray-50"
+          >
+            <p className="font-semibold text-indigo-700">
+              <span className="text-gray-600">Service ID:</span> {service.serviceId}
+            </p>
+            <p>
+              <span className="font-medium">Name:</span> {service.serviceName}
+            </p>
+            <p>
+              <span className="font-medium">Description:</span> {service.serviceDescription}
+            </p>
+            <p>
+              <span className="font-medium">Price:</span> ₹{service.servicePrice.toFixed(2)}
+            </p>
+            <p>
+              <span className="font-medium">PG:</span> {service.pgName} (ID: {service.pgId})
+            </p>
+            <p>
+              <span className="font-medium">Room ID:</span> {service.roomId || "N/A"}
+            </p>
+          </div>
+        ))}
+      </div>
+    ) : selectedPgId ? (
+      <p className="mt-4 text-gray-600">No services found for this PG.</p>
+    ) : null}
+  </div>
+)}
+
+
+
+
 
     </div>
   );
