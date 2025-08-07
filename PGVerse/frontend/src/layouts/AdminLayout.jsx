@@ -36,6 +36,18 @@ const AdminLayout = () => {
         >
           Add Owner
         </button>
+         <button
+          onClick={() => setView("pgReviews")}
+          className="w-full bg-purple-500 px-4 py-2 rounded"
+        >
+          Get Reviews
+        </button>
+        <button
+          onClick={() => setView("pgBookings")}
+          className="w-full bg-purple-500 px-4 py-2 rounded"
+        >
+          Get Bookings
+        </button>
         <button
           onClick={handleLogout}
           className="w-full text-red-500 mt-4 px-4 py-2 border border-red-500 rounded"
