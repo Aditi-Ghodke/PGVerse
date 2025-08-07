@@ -67,13 +67,13 @@ const OwnerLayout = () => {
             >
             View All PGs
         </button>
-
+{/* 
             <button
             onClick={() => setView("getPgById")}
             className="w-full bg-pink-500 px-4 py-2 rounded"
             >
             View PG By ID
-        </button>
+        </button> */}
 
         <button
           onClick={() => setView("addRoom")}
@@ -82,12 +82,12 @@ const OwnerLayout = () => {
           Add Room
         </button>
 
-      <button
+      {/* <button
         onClick={() => setView("updateRoom")}
         className="w-full bg-yellow-500 text-white px-4 py-2 rounded mt-2"
       >
         Update Room
-      </button>
+      </button> */}
 
       <button
         onClick={() => setView("getAllRooms")}
@@ -96,19 +96,19 @@ const OwnerLayout = () => {
         View All Rooms in PG
       </button>
 
-      <button
+      {/* <button
         onClick={() => setView("getRoomById")}
         className="w-full bg-pink-500 text-white px-4 py-2 rounded"
       >
         View Room By ID
-      </button>
+      </button> */}
 
-      <button
+      {/* <button
         onClick={() => setView("deleteRoom")}
         className="w-full bg-red-500 text-white px-4 py-2 rounded"
       >
         Delete Room
-      </button>
+      </button> */}
 
        <button
         onClick={() => setView("addService")}
@@ -118,10 +118,17 @@ const OwnerLayout = () => {
       </button>
 
       <button
+        onClick={() => setView("getRequestedServicesByPgId")}
+        className="w-full bg-indigo-600 text-white px-4 py-2 rounded"
+      >
+        View Requested Services
+      </button>
+
+      <button
         onClick={() => setView("getServicesByPgId")}
         className="w-full bg-indigo-600 text-white px-4 py-2 rounded"
       >
-        View Services by PG ID
+        View All Services
       </button>
 
       {/* Button to get reviews */}
@@ -147,6 +154,8 @@ const OwnerLayout = () => {
       >
         Update Bookings Status
       </button>
+
+      
         <button
           onClick={handleLogout}
           className="w-full text-red-500 mt-4 px-4 py-2 border border-red-500 rounded"
