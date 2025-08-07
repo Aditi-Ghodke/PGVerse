@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllPg } from "../api/pgpropertyApi";
 import { useNavigate } from "react-router-dom";
+import PGList from "../components/PGList";
 
 const HomePage = () => {
   const [pgList, setPgList] = useState([]);
@@ -18,6 +19,7 @@ const HomePage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+       <PGList/>
       <h1 className="text-4xl font-extrabold mb-10 text-center text-indigo-700">
         Available PGs
       </h1>
@@ -41,6 +43,7 @@ const HomePage = () => {
           </div>
         ))}
       </div>
+     
     </div>
   );
 };

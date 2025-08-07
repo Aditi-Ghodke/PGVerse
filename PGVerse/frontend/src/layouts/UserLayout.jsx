@@ -194,12 +194,12 @@ const UserLayout = () => {
           My Reviews
         </button>
 
-         <button
+         {/* <button
             onClick={() => setView("addReview")}
             className="w-full bg-green-600 text-white px-4 py-2 rounded"
           >
             Add Review
-          </button>
+          </button> */}
 
           <button
             onClick={() => setView("requestService")}

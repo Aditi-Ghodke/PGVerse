@@ -89,16 +89,20 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import NotFound from "./pages/NotFound";
 import PrivateRoute from "./routes/PrivateRoute";
+import Navbar from "./components/Navbar";
+import AboutUs from "./components/AboutUs";
 
 function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <BrowserRouter>
+      <Navbar />
         <Routes>
-
+        
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/about" element={<AboutUs />} />
            <Route path="/register" element={<Register />} />
           <Route path="/pg/:pgId" element={<PgDetailsPage />} />
           <Route

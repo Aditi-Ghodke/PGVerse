@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addReview,   createRazorpayOrder, makeBooking, makePayment  } from "../api/userApi"; 
 import { getPgById, getRoomsByPgId, getReviewsByPgId } from "../api/pgpropertyApi";
 
@@ -19,7 +19,8 @@ const PgDetailsPage = () => {
   const isLoggedIn = !!localStorage.getItem("token");
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
-
+  const location = useLocation();
+  
 // Load PG details, rooms, and reviews
 useEffect(() => {
   getPgById(pgId).then(res => setPg(res.data));
@@ -81,8 +82,9 @@ const handleBookNow = async () => {
   const userId = localStorage.getItem("id");
 
   if (!token || !userId) {
-    navigate("/login");
-    return;
+    navigate("/login", {
+        state: { from: location },
+      });
   }
 
   if (!pgId) {
@@ -356,6 +358,7 @@ const submitReview = () => {
 
         </div>
       )}
+      
     </div>
   );
 };

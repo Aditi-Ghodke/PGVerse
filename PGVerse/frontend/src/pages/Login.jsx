@@ -25,7 +25,7 @@ const Login = () => {
       // Save user info to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("id", id);
-      localStorage.setItem("userId", id); // Important for review submission
+      localStorage.setItem("userId", id); 
       localStorage.setItem("name", name);
       localStorage.setItem("email", email);
 
