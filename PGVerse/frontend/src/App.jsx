@@ -73,6 +73,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css'
 
+import Register from '../src/pages/Register'
 import Login from './pages/Login'
 import LandingPage from "../src/pages/LandingPage";
 import HomePage from '../src/pages/Home'
@@ -98,6 +99,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
+           <Route path="/register" element={<Register />} />
           <Route path="/pg/:pgId" element={<PgDetailsPage />} />
           <Route
             path="/login"
@@ -144,7 +146,6 @@ function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
           </Route>
 
-          {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
 
         </Routes>
