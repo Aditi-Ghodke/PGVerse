@@ -178,11 +178,18 @@ public class OwnerController {
 	}
 	
 	//GET SERVICES BY PG ID
+	@GetMapping("/users/services/{pgId}")
+	public ResponseEntity<?> getRequestedServicesById(@PathVariable Long pgId){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(ownerService.getRequestedServicesById(pgId));
+	}
+	
 	@GetMapping("/services/{pgId}")
-	public ResponseEntity<?> getServicesById(@PathVariable Long pgId){
+	public ResponseEntity<?> getServicesByPgId(@PathVariable Long pgId){
 		return ResponseEntity.status(HttpStatus.OK)
 				.body(ownerService.getServicesById(pgId));
 	}
+	
 	
 	//--------REVIEWS---------
 	
