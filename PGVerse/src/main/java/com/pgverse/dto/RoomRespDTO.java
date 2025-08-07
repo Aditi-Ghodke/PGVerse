@@ -10,7 +10,8 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 public class RoomRespDTO {
-	
+	private Long roomId;
+	private String roomNumber;
 	private int floor;
 	private int capacity;
 	private int currentOccupancy;
@@ -19,5 +20,4 @@ public class RoomRespDTO {
 	private Long pgId;
 	private String pgName;
 	private String imagePath;
-	
 }
