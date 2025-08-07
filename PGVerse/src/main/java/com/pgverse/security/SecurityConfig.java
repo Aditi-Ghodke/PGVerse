@@ -21,8 +21,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import lombok.RequiredArgsConstructor;
 
 
-
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -97,7 +95,6 @@ public class SecurityConfig implements WebMvcConfigurer{
             .addResourceHandler("/uploads/**")
             .addResourceLocations("file:uploads/")
             .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
-    
     }
     
 }
