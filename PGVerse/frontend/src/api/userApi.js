@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/users";
+export const BASE_PAYMENT_URL = "http://localhost:8080/payment";
 
 // Add token to headers
 const authHeaders = (token) => ({
@@ -90,4 +91,25 @@ export const cancelBooking = (userId, bookingId, token) => {
 // REQUEST SERVICE
 export const requestService = (data, token) => {
   return axios.post(`${BASE_URL}/services/request-service`, data, authHeaders(token));
+};
+
+// GET SERVICES BY PG ID
+export const getServicesByPgId = (pgId, token) => {
+  return axios.get(`${BASE_URL}/services/pg/${pgId}`, authHeaders(token));
+};
+
+// GET SERVICES BY ROOM ID
+export const getServicesByRoomId = (roomId, token) => {
+  return axios.get(`${BASE_URL}/services/room/${roomId}`, authHeaders(token));
+};
+
+
+//---------- RAZOR PAY ----------
+export const createRazorpayOrder = async (bookingPayload, token) => {
+  const res = await axios.post(
+  `${BASE_PAYMENT_URL}/create-order`,
+  bookingPayload,
+  authHeaders(token)
+);
+  return res.data;
 };
