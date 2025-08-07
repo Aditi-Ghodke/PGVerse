@@ -11,5 +11,5 @@ import java.util.List;
 public interface RoomDao extends JpaRepository<Room, Long>{
 	
 	Optional<Room> findByRoomId(Long roomId);
-	
+
 }
