@@ -757,15 +757,15 @@ public class OwnerServiceImpl implements OwnerService{
 		return responseDTO;
 	}
 
+	//--------SERVICES----------
+	
 	@Override
-	public List<RequestedServiceResponseDTO> getServicesById(Long pgId) {
-//		PgProperty pgProperty = pgPropertyDao.findById(pgId)
-//		        .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
+	public List<RequestedServiceResponseDTO> getRequestedServicesById(Long pgId) {
+		PgProperty pgProperty = pgPropertyDao.findById(pgId)
+		        .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
 
 		
 		System.out.println("PG ID: " + pgId);
-		PgProperty pgProperty = pgPropertyDao.findById(pgId)
-		    .orElseThrow(() -> new ResourceNotFoundException("PG Property not found"));
 		System.out.println("PG Property found: " + pgProperty.getName());
 		List<UserServiceRequest> requests = userServiceRequestDao.findByPgProperty(pgProperty);
 	    if (requests.isEmpty()) {
@@ -793,6 +793,45 @@ public class OwnerServiceImpl implements OwnerService{
 	        .collect(Collectors.toList());
 	}
 
+	
+	@Override
+	public List<AddedServiceResponseDTO> getServicesById(Long pgId) {
+		
+		    PgProperty pgProperty = pgPropertyDao.findByPgId(pgId)
+		        .orElseThrow(() -> new ResourceNotFoundException("PG Property not found with ID: " + pgId));
+
+		    List<PgService> services = pgserviceDao.findServicesByPgId(pgId);
+		    
+		    return services.stream().map(ser -> {
+		        AddedServiceResponseDTO dto = new AddedServiceResponseDTO();
+
+		        dto.setServiceId(ser.getServiceId());
+		        dto.setServiceName(ser.getName());
+		        dto.setServiceDescription(ser.getDescription());
+		        dto.setServicePrice(ser.getPrice());
+
+		        if (ser.getRoom() != null) {
+		            dto.setRoomId(ser.getRoom().getRoomId());
+
+		            if (ser.getRoom().getPgproperty() != null) {
+		                dto.setPgId(ser.getRoom().getPgproperty().getPgId());
+		                dto.setPgName(ser.getRoom().getPgproperty().getName());
+		            }
+		        }
+		        
+		        
+
+		        // If service linked to room, set roomId; else null
+		        if (ser.getRoom() != null) {
+		            dto.setRoomId(ser.getRoom().getRoomId());
+		        }
+
+		        return dto;
+		    }).collect(Collectors.toList());
+
+	}
+	
+	
 	//--------REVIEW----------
 	
 	@Override
@@ -842,5 +881,4 @@ public class OwnerServiceImpl implements OwnerService{
 	            roomDao.save(room);
 	        }
 	    }
-
 }
