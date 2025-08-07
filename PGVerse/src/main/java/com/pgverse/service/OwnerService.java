@@ -62,7 +62,9 @@ public interface OwnerService {
 
 	AddedServiceResponseDTO addService(Long ownerId, AddServiceDTO dto);
 
-	List<RequestedServiceResponseDTO> getServicesById(Long pgId);
+	List<RequestedServiceResponseDTO> getRequestedServicesById(Long pgId);
+	
+	List<AddedServiceResponseDTO> getServicesById(Long pgId);
 
 	List<ReviewRespDTO> reviewForPg(Long pgId);
 
