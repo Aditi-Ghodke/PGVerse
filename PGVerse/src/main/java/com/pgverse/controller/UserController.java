@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pgverse.dto.AddedServiceResponseDTO;
 import com.pgverse.dto.BookingReqDTO;
 import com.pgverse.dto.BookingRespDTO;
-import com.pgverse.dto.BookingUpdateReqDTO;
 import com.pgverse.dto.ChangePasswordDTO;
 import com.pgverse.dto.LoginReqDTO;
 import com.pgverse.dto.PaymentReqDTO;
@@ -170,5 +170,18 @@ public class UserController {
 					.body(userService.requestService(dto));
 		
 	}
+	
+	 @GetMapping("/services/pg/{pgId}")
+	    public ResponseEntity<List<AddedServiceResponseDTO>> getServicesByPgId(@PathVariable Long pgId) {
+	        List<AddedServiceResponseDTO> services = userService.getServicesByPgId(pgId);
+	        return ResponseEntity.ok(services);
+	    }
+
+	    // Fetch services by Room ID
+	    @GetMapping("/services/room/{roomId}")
+	    public ResponseEntity<List<AddedServiceResponseDTO>> getServicesByRoomId(@PathVariable Long roomId) {
+	        List<AddedServiceResponseDTO> services = userService.getServicesByRoomId(roomId);
+	        return ResponseEntity.ok(services);
+	    }
 	
 }
