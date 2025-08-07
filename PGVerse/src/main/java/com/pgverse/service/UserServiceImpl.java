@@ -1,5 +1,7 @@
 package com.pgverse.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +26,7 @@ import com.pgverse.dao.RoomDao;
 import com.pgverse.dao.UserDao;
 import com.pgverse.dao.UserServiceRequestDao;
 import com.pgverse.dto.AddBookingResDTO;
+import com.pgverse.dto.AddedServiceResponseDTO;
 import com.pgverse.dto.ApiResponse;
 import com.pgverse.dto.BookingReqDTO;
 import com.pgverse.dto.BookingRespDTO;
@@ -313,53 +316,165 @@ public class UserServiceImpl implements UserService{
 	
 	
 	 //MAKE PAYMENT FOR EXISTING BOOKING
-    public BookingRespDTO makePayment(Long bookingId, PaymentReqDTO paymentDTO) {
-        Booking booking = bookingDao.findById(bookingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+//    public BookingRespDTO makePayment(Long bookingId, PaymentReqDTO paymentDTO) {
+//        Booking booking = bookingDao.findById(bookingId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+//
+//        if(booking.getPayment() != null) {
+//            throw new ApiException("Payment already exists for this booking");
+//        }
+//        
+//        //CHECK PRICE 
+//        //USER WILL PAY HIS/HER SHARE ONLY
+//       Room room = booking.getRoom();
+////        double expectedAmount = room.getPricePerMonth()/room.getCapacity();
+////        
+//       double expectedAmount = room.getPricePerMonth() / room.getCapacity();
+//       expectedAmount = Math.round(expectedAmount* 100.0) / 100.0;
+//
+//        if(paymentDTO.getAmount()!=expectedAmount) {
+//        	throw new ApiException("Invalid payment amount. Expected: " + expectedAmount);
+//        }
+//        
+//        Payment payment = new Payment();
+//        payment.setAmount(paymentDTO.getAmount());
+//        payment.setPaymentDate(LocalDateTime.now());
+//        payment.setPaymentStatus(paymentDTO.getPaymentStatus() != null ? paymentDTO.getPaymentStatus() : PaymentStatus.SUCCESS);
+//        payment.setBooking(booking);
+//
+//        Payment savedPayment = paymentDao.save(payment);
+//
+//        booking.setPayment(savedPayment);
+//        bookingDao.save(booking);
+//
+//        //Map to BookingRespDTO including payment info
+//        BookingRespDTO respDto = modelMapper.map(booking, BookingRespDTO.class);
+//        respDto.setRoomId(booking.getRoom().getRoomId());
+//        respDto.setPgPropertId(booking.getPgProperty().getPgId());
+//        respDto.setPgPropertyName(booking.getPgProperty().getName());
+//        respDto.setUserId(booking.getUser().getUserId());
+//        respDto.setUserName(booking.getUser().getName());
+//
+//        //Payment info
+//        respDto.setPaymentId(savedPayment.getPaymentId());
+//        respDto.setAmount(savedPayment.getAmount());
+//        respDto.setPaymentStatus(savedPayment.getPaymentStatus());
+//        respDto.setPaymentDate(savedPayment.getPaymentDate());
+//
+//        return respDto;
+//    }
 
-        if(booking.getPayment() != null) {
-            throw new ApiException("Payment already exists for this booking");
-        }
-        
-        //CHECK PRICE 
-        //USER WILL PAY HIS/HER SHARE ONLY
-        Room room = booking.getRoom();
-        double expectedAmount = room.getPricePerMonth()/room.getCapacity();
-        
-        if(paymentDTO.getAmount()!=expectedAmount) {
-        	throw new ApiException("Invalid payment amount. Expected: " + expectedAmount);
-        }
-        
-        Payment payment = new Payment();
-        payment.setAmount(paymentDTO.getAmount());
-        payment.setPaymentDate(LocalDateTime.now());
-        payment.setPaymentStatus(paymentDTO.getPaymentStatus() != null ? paymentDTO.getPaymentStatus() : PaymentStatus.SUCCESS);
-        payment.setBooking(booking);
-
-        Payment savedPayment = paymentDao.save(payment);
-
-        booking.setPayment(savedPayment);
-        bookingDao.save(booking);
-
-        //Map to BookingRespDTO including payment info
-        BookingRespDTO respDto = modelMapper.map(booking, BookingRespDTO.class);
-        respDto.setRoomId(booking.getRoom().getRoomId());
-        respDto.setPgPropertId(booking.getPgProperty().getPgId());
-        respDto.setPgPropertyName(booking.getPgProperty().getName());
-        respDto.setUserId(booking.getUser().getUserId());
-        respDto.setUserName(booking.getUser().getName());
-
-        //Payment info
-        respDto.setPaymentId(savedPayment.getPaymentId());
-        respDto.setAmount(savedPayment.getAmount());
-        respDto.setPaymentStatus(savedPayment.getPaymentStatus());
-        respDto.setPaymentDate(savedPayment.getPaymentDate());
-
-        return respDto;
-    }
+	//MAKE PAYMENT FOR EXISTING BOOKING
+//		public BookingRespDTO makePayment(Long bookingId, PaymentReqDTO paymentDTO) {
+//	    Booking booking = bookingDao.findById(bookingId)
+//	            .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+//
+//	    if (booking.getPayment() != null) {
+//	        throw new ApiException("Payment already exists for this booking");
+//	    }
+//
+//	    // Calculate expected amount in rupees (rounded to 2 decimals)
+//	    Room room = booking.getRoom();
+//	    double expectedAmount = room.getPricePerMonth() / room.getCapacity();
+//	    expectedAmount = Math.round(expectedAmount * 100.0) / 100.0;
+//
+//	    // Convert expectedAmount and payment amount to paise (int)
+//	    int expectedAmountInPaise = (int) Math.round(expectedAmount * 100);
+//	    int paymentAmountInPaise = (int) Math.round(paymentDTO.getAmount() * 100);
+//
+//	  
+//	    if (paymentAmountInPaise != expectedAmountInPaise) {
+//	        throw new ApiException("Invalid payment amount. Expected: " + expectedAmount);
+//	    }
+//
+//	    Payment payment = new Payment();
+//	    payment.setAmount(paymentDTO.getAmount());  // Store in rupees as before
+//	    payment.setPaymentDate(LocalDateTime.now());
+//	    payment.setPaymentStatus(paymentDTO.getPaymentStatus() != null ? paymentDTO.getPaymentStatus() : PaymentStatus.SUCCESS);
+//	    payment.setBooking(booking);
+//
+//	    Payment savedPayment = paymentDao.save(payment);
+//
+//	    booking.setPayment(savedPayment);
+//	    bookingDao.save(booking);
+//
+//	    // Map to BookingRespDTO including payment info
+//	    BookingRespDTO respDto = modelMapper.map(booking, BookingRespDTO.class);
+//	    respDto.setRoomId(booking.getRoom().getRoomId());
+//	    respDto.setPgPropertId(booking.getPgProperty().getPgId());
+//	    respDto.setPgPropertyName(booking.getPgProperty().getName());
+//	    respDto.setUserId(booking.getUser().getUserId());
+//	    respDto.setUserName(booking.getUser().getName());
+//
+//	    // Payment info
+//	    respDto.setPaymentId(savedPayment.getPaymentId());
+//	    respDto.setAmount(savedPayment.getAmount());
+//	    respDto.setPaymentStatus(savedPayment.getPaymentStatus());
+//	    respDto.setPaymentDate(savedPayment.getPaymentDate());
+//
+//	    return respDto;
+//	}
 
     
-    
+	public BookingRespDTO makePayment(Long bookingId, PaymentReqDTO paymentDTO) {
+	    Booking booking = bookingDao.findById(bookingId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+	    if (booking.getPayment() != null) {
+	        throw new ApiException("Payment already exists for this booking");
+	    }
+
+	    // Calculate expected amount in rupees (rounded to 2 decimals)
+	    Room room = booking.getRoom();
+	    double rawAmount = room.getPricePerMonth() / room.getCapacity();
+	    double expectedAmount = Math.round(rawAmount * 100.0) / 100.0;
+
+	    System.out.println("Raw amount in rupees: " + rawAmount);
+	    System.out.println("Rounded expected amount: " + expectedAmount);
+
+	    // Convert expectedAmount and payment amount to paise (int)
+	    int expectedAmountInPaise = (int) Math.round(expectedAmount * 100);
+	    int paymentAmountInPaise = (int) Math.round(paymentDTO.getAmount() * 100);
+	    
+	    System.out.println("Expected amount in paise: " + expectedAmountInPaise);
+	    System.out.println("Payment amount in paise: " + paymentAmountInPaise);
+
+	    // Validate payment amount matches expected amount
+	    if (paymentAmountInPaise != expectedAmountInPaise) {
+	        throw new ApiException("Invalid payment amount. Expected: " + expectedAmount);
+	    }
+
+	    // Create and save payment entity
+	    Payment payment = new Payment();
+	    payment.setAmount(paymentDTO.getAmount());
+	    payment.setPaymentDate(LocalDateTime.now());
+	    payment.setPaymentStatus(paymentDTO.getPaymentStatus() != null ? paymentDTO.getPaymentStatus() : PaymentStatus.SUCCESS);
+	    payment.setBooking(booking);
+
+	    Payment savedPayment = paymentDao.save(payment);
+
+	    // Link payment to booking and save
+	    booking.setPayment(savedPayment);
+	    bookingDao.save(booking);
+
+	    // Map to BookingRespDTO including payment info
+	    BookingRespDTO respDto = modelMapper.map(booking, BookingRespDTO.class);
+	    respDto.setRoomId(booking.getRoom().getRoomId());
+	    respDto.setPgPropertId(booking.getPgProperty().getPgId());
+	    respDto.setPgPropertyName(booking.getPgProperty().getName());
+	    respDto.setUserId(booking.getUser().getUserId());
+	    respDto.setUserName(booking.getUser().getName());
+
+	    respDto.setPaymentId(savedPayment.getPaymentId());
+	    respDto.setAmount(savedPayment.getAmount());
+	    respDto.setPaymentStatus(savedPayment.getPaymentStatus());
+	    respDto.setPaymentDate(savedPayment.getPaymentDate());
+
+	    return respDto;
+	}
+
+	
+	
     //UPDATE COMPLETE BOOKING
     
     @Scheduled(cron = "0 0 1 * * ?") // Runs daily at 1 AM
@@ -447,14 +562,13 @@ public class UserServiceImpl implements UserService{
 		 Booking booking = bookingDao.findById(bookingId)
 		            .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-		    
-		  if(!booking.getUser().getUserId().equals(userId)) {
-			  throw new ResourceNotFoundException("Booking does not belong to this user");
-		  }
 		  
 		  if (booking.getStatus() == BookingStatus.CANCELLED) {
 		        throw new ApiException("Booking is already cancelled");
 		   }
+		  
+		  
+		 
 		  
 		  booking.setStatus(BookingStatus.CANCELLED);
 		  
@@ -468,9 +582,6 @@ public class UserServiceImpl implements UserService{
 		 }
 		    
 		  bookingDao.save(booking);
-		  
-		  
-		  
 		  
 		  BookingRespDTO dto = modelMapper.map(booking, BookingRespDTO.class);
 		    dto.setUserId(user.getUserId());
@@ -582,5 +693,56 @@ public class UserServiceImpl implements UserService{
 	  respDto.setRoomId(room.getRoomId());
 	  
 	  return respDto;
+	}
+
+	@Override
+	public List<AddedServiceResponseDTO> getServicesByRoomId(Long roomId) {
+		Room room = roomDao.findById(roomId)
+		        .orElseThrow(() -> new ResourceNotFoundException("Room not found with ID: " + roomId));
+		List<PgService> services = serviceDao.findByRoom(room);
+
+	    return services.stream().map(ser -> {
+	        AddedServiceResponseDTO dto = new AddedServiceResponseDTO();
+
+	        dto.setServiceId(ser.getServiceId());
+	        dto.setServiceName(ser.getName());
+	        dto.setServiceDescription(ser.getDescription());
+	        dto.setServicePrice(ser.getPrice());
+
+	        if (ser.getRoom() != null) {
+	            dto.setRoomId(ser.getRoom().getRoomId());
+	            if (ser.getRoom().getPgproperty() != null) {
+	                dto.setPgId(ser.getRoom().getPgproperty().getPgId());
+	                dto.setPgName(ser.getRoom().getPgproperty().getName());
+	            }
+	        }
+	        return dto;
+	    }).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<AddedServiceResponseDTO> getServicesByPgId(Long pgId) {
+		 PgProperty pgProperty = pgPropertyDao.findById(pgId)
+			        .orElseThrow(() -> new ResourceNotFoundException("PG Property not found with ID: " + pgId));
+
+		List<PgService> services = serviceDao.findServicesByPgId(pgId);
+		
+		return services.stream().map(ser -> {
+	        AddedServiceResponseDTO dto = new AddedServiceResponseDTO();
+
+	        dto.setServiceId(ser.getServiceId());
+	        dto.setServiceName(ser.getName());
+	        dto.setServiceDescription(ser.getDescription());
+	        dto.setServicePrice(ser.getPrice());
+
+	        if (ser.getRoom() != null) {
+	            dto.setRoomId(ser.getRoom().getRoomId());
+	            if (ser.getRoom().getPgproperty() != null) {
+	                dto.setPgId(ser.getRoom().getPgproperty().getPgId());
+	                dto.setPgName(ser.getRoom().getPgproperty().getName());
+	            }
+	        }
+	        return dto;
+	    }).collect(Collectors.toList());
 	}
 }
