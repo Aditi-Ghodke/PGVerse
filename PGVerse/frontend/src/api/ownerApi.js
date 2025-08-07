@@ -102,6 +102,9 @@ export const getRoomById = (roomId, token) =>
 export const addService = (ownerId, dto, token) =>
   axios.post(`${BASE_URL}/services/${ownerId}/add-service`, dto, authHeaders(token));
 
+export const getRequestedServicesByPgId = (pgId, token) =>
+  axios.get(`${BASE_URL}/users/services/${pgId}`, authHeaders(token));
+
 export const getServicesByPgId = (pgId, token) =>
   axios.get(`${BASE_URL}/services/${pgId}`, authHeaders(token));
 
