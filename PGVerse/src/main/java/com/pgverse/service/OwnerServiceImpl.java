@@ -297,6 +297,8 @@ public class OwnerServiceImpl implements OwnerService{
 
 	    // Update other fields
 	    modelMapper.map(dto, pgproperty);
+	 // After modelMapper.map(dto, pgproperty);
+	    pgproperty.setPgType(dto.getPgtype());
 	    PgProperty updated = pgPropertyDao.save(pgproperty);
 
 	    // Prepare response DTO
