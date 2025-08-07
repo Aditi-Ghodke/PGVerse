@@ -15,7 +15,7 @@ public class RequestServiceDTO {
 	@NotNull(message = "Please enter the Service Id")
     private Long serviceId;
 	
-	@NotNull(message = "Please enter the PG Id")
+	@NotNull(message = "Please enter the Room Id")
     private Long roomId;
 	
 	@NotNull(message = "Please enter the PG Id")
