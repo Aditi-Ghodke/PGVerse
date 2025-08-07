@@ -64,6 +64,10 @@ public interface UserService {
 	//----------SERVICE-----------
 
 	RequestedServiceResponseDTO requestService(@Valid RequestServiceDTO dto);
+
+	List<AddedServiceResponseDTO> getServicesByRoomId(Long roomId);
+
+	List<AddedServiceResponseDTO> getServicesByPgId(Long pgId);
 	
 	
 }
