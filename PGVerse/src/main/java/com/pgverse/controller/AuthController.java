@@ -17,32 +17,7 @@ import com.pgverse.security.CustomUserDetailsService;
 import com.pgverse.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
-//
-//@RestController
-//@RequestMapping("/auth")
-//@RequiredArgsConstructor
-//public class AuthController {
-//
-//    private final AuthenticationManager authManager;
-//    private final JwtService jwtService;
-//    private final CustomUserDetailsService userDetailsService;
-//
-//    @PostMapping("/login")
-//    public JwtResponse login(@RequestBody JwtRequest request) {
-//        authManager.authenticate(new UsernamePasswordAuthenticationToken(
-//                request.getEmail(), request.getPassword()));
-//
-//        final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-//        final String token = jwtService.generateToken(userDetails);
-//        
-//        return new JwtResponse(
-//                token,
-//                request.getEmail(),
-//                name,role;
-//                  
-//        );
-//    }
-//}
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
