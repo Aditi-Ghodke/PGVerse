@@ -54,7 +54,6 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 		                          @Param("today") LocalDate today,
 		                          @Param("status") BookingStatus status);
 
-
 	
 	Optional<Booking> findByUserUserIdAndRoomRoomIdAndPgPropertyPgIdAndStatusNot(
 	        Long userId, Long roomId, Long pgId, BookingStatus cancelledStatus);
