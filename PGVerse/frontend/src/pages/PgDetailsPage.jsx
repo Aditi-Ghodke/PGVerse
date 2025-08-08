@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addReview,   createRazorpayOrder, makeBooking, makePayment  } from "../api/userApi"; 
 import { getPgById, getRoomsByPgId, getReviewsByPgId } from "../api/pgpropertyApi";
 
-
 const PgDetailsPage = () => {
   const { pgId } = useParams();
   const navigate = useNavigate();

@@ -91,6 +91,7 @@ import NotFound from "./pages/NotFound";
 import PrivateRoute from "./routes/PrivateRoute";
 import Navbar from "./components/Navbar";
 import AboutUs from "./components/AboutUs";
+import PGList from "./components/PGList";
 
 function App() {
   return (
@@ -101,14 +102,15 @@ function App() {
         
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<HomePage />} />
+          {/* <Route path="/home" element={<HomePage />} /> */}
+          <Route path="/home" element={<PGList />} />
           <Route path="/about" element={<AboutUs />} />
            <Route path="/register" element={<Register />} />
           <Route path="/pg/:pgId" element={<PgDetailsPage />} />
           <Route
             path="/login"
             element={
-              <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-400 to-indigo-600">
+              <div className="flex items-center justify-center min-h-screen ">
                 <Login />
               </div>
             }

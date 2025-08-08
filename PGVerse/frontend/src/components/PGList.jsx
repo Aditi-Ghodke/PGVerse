@@ -3,6 +3,7 @@ import { getAllPg } from "../api/pgpropertyApi";
 import { useNavigate } from "react-router-dom";
 import { FiMapPin } from "react-icons/fi";
 import { MdCategory } from "react-icons/md";
+import Footer from "./Footer";
 
 const PGList = () => {
   const [pgs, setPGs] = useState([]);
@@ -55,6 +56,7 @@ const PGList = () => {
   }, [locationFilter, categoryFilter, pgs]);
 
   return (
+    <div>
     <div className="p-6">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 justify-end">
         <label className="text-lg font-semibold">Find your PG</label>
@@ -117,6 +119,8 @@ const PGList = () => {
       ) : (
         <p className="text-center text-gray-500">No PGs found matching your criteria.</p>
       )}
+    </div>
+      <Footer/>
     </div>
   );
 };

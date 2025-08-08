@@ -31,18 +31,26 @@ const AboutUsSection = () => {
             We believe in transparency, quality, and community, making sure every listing is verified and every stay feels like home.
           </p>
         </div>
-        <div className="md:w-1/2">
+        {/* <div className="md:w-1/2">
           <img
             src="/images/aboutUs/about1.png"
             alt="PG Room"
             className="rounded-3xl shadow-xl w-full transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl"
           />
-        </div>
+        </div> */}
+        <div className="md:w-1/2 max-w-2xl mx-auto">
+        <img
+          src="/images/aboutUs/about1.png"
+          alt="PG Room"
+          className="rounded-2xl shadow-lg w-full transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-xl"
+        />
+      </div>
+
       </div>
 
       {/* Section 2 */}
       <div className="flex flex-col-reverse md:flex-row items-center gap-14">
-        <div className="md:w-1/2">
+        <div className="md:w-1/2 max-w-2xl mx-auto">
           <img
             src="/images/aboutUs/about2.png"
             alt="Comfort Living"
@@ -79,7 +87,7 @@ const AboutUsSection = () => {
             Join our community and experience a new way to find your home away from home.
           </p>
         </div>
-        <div className="md:w-1/2">
+        <div className="md:w-1/2 max-w-2xl mx-auto">
           <img
             src="/images/aboutUs/about3.png"
             alt="Next Home"

@@ -100,65 +100,65 @@ const Navbar = () => {
             </div> */}
 
             {/* Right Section */}
-<div className="hidden md:flex items-center gap-4">
-    <button
-        onClick={() => navigate("/home")}
-        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-    >
-        Explore
-    </button>
+            <div className="hidden md:flex items-center gap-4">
+                <button
+                    onClick={() => navigate("/home")}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300"
+                >
+                    Explore
+                </button>
 
-    {!isLoggedIn ? (
-        <button
-            onClick={handleLoginRedirect}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-            Login
-        </button>
-    ) : (
-        <div className="relative">
-            <div
-                className="flex items-center gap-2 cursor-pointer"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-                <Avatar name={name} size="36" round="50%" />
-                <span className="text-gray-700 font-medium">{name}</span>
+            {!isLoggedIn ? (
+                <button
+                    onClick={handleLoginRedirect}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300"
+                >
+                    Login
+                </button>
+                ) : (
+                    <div className="relative">
+                        <div
+                            className="flex items-center gap-2 cursor-pointer"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        >
+                            <Avatar name={name} size="36" round="50%" />
+                            <span className="text-gray-700 font-medium">{name}</span>
+                        </div>
+
+                        {isDropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-md z-10">
+                                {location.pathname.includes("dashboard") ? (
+                                    <Link
+                                        to="/"
+                                        className="block px-4 py-2 hover:bg-gray-100 text-sm"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        Home
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        to={`/${role.toLowerCase()}/dashboard`}
+                                        className="block px-4 py-2 hover:bg-gray-100 text-sm"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        Dashboard
+                                    </Link>
+                                )}
+
+                                <button
+                                    onClick={() => {
+                                        setIsDropdownOpen(false);
+                                        handleLogout();
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
-
-            {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-md z-10">
-                    {location.pathname.includes("dashboard") ? (
-                        <Link
-                            to="/"
-                            className="block px-4 py-2 hover:bg-gray-100 text-sm"
-                            onClick={() => setIsDropdownOpen(false)}
-                        >
-                            Home
-                        </Link>
-                    ) : (
-                        <Link
-                            to={`/${role.toLowerCase()}/dashboard`}
-                            className="block px-4 py-2 hover:bg-gray-100 text-sm"
-                            onClick={() => setIsDropdownOpen(false)}
-                        >
-                            Dashboard
-                        </Link>
-                    )}
-
-                    <button
-                        onClick={() => {
-                            setIsDropdownOpen(false);
-                            handleLogout();
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                    >
-                        Logout
-                    </button>
-                </div>
-            )}
-        </div>
-    )}
-</div>
 
             
 
