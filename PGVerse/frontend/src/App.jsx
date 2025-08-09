@@ -103,7 +103,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           {/* <Route path="/home" element={<HomePage />} /> */}
-          <Route path="/home" element={<PGList />} />
+          <Route path="/pglist" element={<PGList />} />
           <Route path="/about" element={<AboutUs />} />
            <Route path="/register" element={<Register />} />
           <Route path="/pg/:pgId" element={<PgDetailsPage />} />

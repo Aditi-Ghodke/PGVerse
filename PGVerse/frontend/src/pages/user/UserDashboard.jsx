@@ -100,6 +100,7 @@ const UserDashboard = ({ view }) => {
 };
 
 // UPDATE USER
+
 const handleUpdateUser = async (e) => {
   e.preventDefault();
 
@@ -122,6 +123,14 @@ const handleUpdateUser = async (e) => {
     setLoading(false);
   }
 };
+
+useEffect(() => {
+  if (view === "updateUser" && user) {
+    setName(user.name || "");
+    setAddress(user.address || "");
+    setPhone(user.phone || "");
+  }
+}, [view, user]);
 
 
 
@@ -561,7 +570,7 @@ const getUniquePgList = (bookings) => {
   )}
 
   {/* UPDATE */}
-{view === "updateUser" && (
+{/* {view === "updateUser" && (
   <>
     <form
       onSubmit={handleUpdateUser}
@@ -617,7 +626,70 @@ const getUniquePgList = (bookings) => {
       </button>
     </form>
   </>
+)} */}
+
+{view === "updateUser" && (
+  <form
+    onSubmit={handleUpdateUser}
+    className="max-w-md bg-white p-6 rounded shadow"
+  >
+    <h2 className="text-xl font-bold mb-4">Update Profile</h2>
+
+    <div className="mb-4">
+      <label className="block font-semibold mb-1">Name</label>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+        className="w-full border border-gray-300 rounded px-3 py-2"
+      />
+    </div>
+
+    <div className="mb-4">
+      <label className="block font-semibold mb-1">Address</label>
+      <input
+        type="text"
+        value={address}
+        onChange={(e) => setAddress(e.target.value)}
+        required
+        className="w-full border border-gray-300 rounded px-3 py-2"
+      />
+    </div>
+
+    <div className="mb-4">
+      <label className="block font-semibold mb-1">Phone</label>
+      <input
+        type="text"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        required
+        className="w-full border border-gray-300 rounded px-3 py-2"
+      />
+    </div>
+
+    {message && (
+      <p
+        className={`mb-4 ${
+          message.toLowerCase().includes("success")
+            ? "text-green-600"
+            : "text-red-600"
+        }`}
+      >
+        {message}
+      </p>
+    )}
+
+    <button
+      type="submit"
+      disabled={loading}
+      className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+    >
+      {loading ? "Updating..." : "Update Profile"}
+    </button>
+  </form>
 )}
+
 
   {/* ADD REVIEW */}
     {view === "addReview" && (
@@ -712,7 +784,7 @@ const getUniquePgList = (bookings) => {
             <p><strong>Date:</strong> {new Date(review.feedbackDate).toLocaleDateString()}</p>
 
             <div className="flex gap-3 mt-3">
-              <button
+              {/* <button
                 type="button"
                 className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                 onClick={() => {
@@ -721,7 +793,7 @@ const getUniquePgList = (bookings) => {
                 }}
               >
                 Update
-              </button>
+              </button> */}
 
               <button
                 type="button"
@@ -770,6 +842,7 @@ const getUniquePgList = (bookings) => {
                   <th className="px-4 py-2 border">Check-out Date</th>
                   <th className="px-4 py-2 border">Payment Status</th>
                   <th className="px-4 py-2 border">Amount</th>
+                  <th className="px-4 py-2 border">Cancellation Status</th>
                   <th className="px-4 py-2 border">Action</th>
                 </tr>
               </thead>

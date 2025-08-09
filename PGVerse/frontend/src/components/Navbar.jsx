@@ -102,7 +102,7 @@ const Navbar = () => {
             {/* Right Section */}
             <div className="hidden md:flex items-center gap-4">
                 <button
-                    onClick={() => navigate("/home")}
+                    onClick={() => navigate("/pglist")}
                     className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300"
                 >
                     Explore
