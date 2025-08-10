@@ -12,8 +12,6 @@
 // import NotFound from "./pages/NotFound";
 // import PrivateRoute from "./routes/PrivateRoute";
 
-
-
 // function App() {
 //   return (
 //     <>
@@ -60,7 +58,7 @@
 //         {/* Fallback Route */}
 //         <Route path="*" element={<NotFound />} />
 //       </Routes>
-     
+
 //      </BrowserRouter>
 //     </>
 //   )
@@ -68,16 +66,14 @@
 
 // export default App
 
-
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import './App.css'
+import "./App.css";
 
-import Register from '../src/pages/Register'
-import Login from './pages/Login'
+import Register from "../src/pages/Register";
+import Login from "./pages/Login";
 import LandingPage from "../src/pages/LandingPage";
-import HomePage from '../src/pages/Home'
-import PgDetailsPage from '../src/pages/PgDetailsPage'
+import HomePage from "../src/pages/Home";
+import PgDetailsPage from "../src/pages/PgDetailsPage";
 
 import UserLayout from "./layouts/UserLayout";
 import OwnerLayout from "./layouts/OwnerLayout";
@@ -93,19 +89,20 @@ import Navbar from "./components/Navbar";
 import AboutUs from "./components/AboutUs";
 import PGList from "./components/PGList";
 
+import { ToastContainer } from "react-toastify";
+
 function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <BrowserRouter>
-      <Navbar />
+        <Navbar />
         <Routes>
-        
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           {/* <Route path="/home" element={<HomePage />} /> */}
           <Route path="/pglist" element={<PGList />} />
           <Route path="/about" element={<AboutUs />} />
-           <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/pg/:pgId" element={<PgDetailsPage />} />
           <Route
             path="/login"
@@ -153,8 +150,9 @@ function App() {
           </Route>
 
           <Route path="*" element={<NotFound />} />
-
         </Routes>
+        {/* Toastify Container */}
+        <ToastContainer position="top-right" autoClose={3000} />
       </BrowserRouter>
     </div>
   );

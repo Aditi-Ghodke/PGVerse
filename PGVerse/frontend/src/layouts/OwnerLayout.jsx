@@ -2,6 +2,8 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { manuallyUpdateBookings } from "../api/ownerApi"; // adjust path as needed
+import { toast } from "react-toastify";
+import "react-toastify/ReactToastify.css"
 
 const OwnerLayout = () => {
   const { logout } = useAuth();
@@ -19,7 +21,8 @@ const OwnerLayout = () => {
     try {
       const token = localStorage.getItem("token"); // or use from context
       await manuallyUpdateBookings(token);
-      alert("Booking statuses updated successfully!");
+      // alert("Booking statuses updated successfully!");
+        toast.success("Booking statuses updated successfully!");
     } catch (error) {
       console.error("Error updating bookings:", error);
       alert("Failed to update booking statuses.");

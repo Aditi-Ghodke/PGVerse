@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   getOwnerById,
   changeOwnerPassword,
@@ -151,7 +153,8 @@ const OwnerDashboard = () => {
       setError("");
       const res = await getOwnerById(ownerId, token);
       setOwnerData(res.data);
-      setUpdateSuccess("Owner details updated successfully!");
+      // setUpdateSuccess("Owner details updated successfully!");
+      toast.success("Owner details updated successfully!");
     } catch (err) {
       console.error("Failed to update owner:", err);
       setUpdateError("Failed to update owner details.");
@@ -170,7 +173,8 @@ const OwnerDashboard = () => {
     setPasswordSuccess("");
     try {
       await changeOwnerPassword(passwordForm, token);
-      setPasswordSuccess("Password changed successfully");
+      // setPasswordSuccess("Password changed successfully");
+      toast.success("Password changed successfully");
       setPasswordForm({
         email: ownerEmail || "",
         oldPassword: "",
@@ -202,7 +206,8 @@ const OwnerDashboard = () => {
         setPgSuccess("PG Property updated successfully");
       } else {
         await addPgProperty(ownerId, pgForm, pgImageFile, token);
-        setPgSuccess("PG Property added successfully");
+        // setPgSuccess("PG Property added successfully");
+        toast.success("PG Property added successfully");
       }
       setPgForm({ name: "", location: "", description: "", pgtype: "" });
       setPgImageFile(null);
@@ -245,12 +250,14 @@ const OwnerDashboard = () => {
     try {
       const id = pg.pgId || pg.id || pg._id;
       await deletePgProperty(id, token);
-      setPgSuccess(`PG Property "${pg.name}" deleted successfully!`);
+      //setPgSuccess(`PG Property "${pg.name}" deleted successfully!`);
+      toast.success(`PG Property "${pg.name}" deleted successfully!`);
       const res = await getPgByOwnerId(ownerId, token);
       setPgList(res.data || []);
     } catch (err) {
       console.error("Failed to delete PG property:", err);
-      setPgError("Failed to delete PG Property");
+      //setPgError("Failed to delete PG Property");
+      toast.success("Failed to delete PG Property");
     }
   };
 
@@ -288,7 +295,6 @@ const OwnerDashboard = () => {
     setRoomImage(e.target.files[0]);
   };
 
-  // Add room submit handler
   // const handleAddRoom = async () => {
   //   setRoomAddMsg("");
   //   setRoomAddError("");
@@ -362,8 +368,8 @@ const OwnerDashboard = () => {
 
     try {
       await addRoomToPg(pgIdForRoom, roomData, roomImage, token);
-      setRoomAddMsg(" Room added successfully!");
-
+      //setRoomAddMsg(" Room added successfully!");
+      toast.success("Room added successfully!");
       // Reset fields
       setRoomData({
         roomNumber: "",
@@ -436,8 +442,10 @@ const OwnerDashboard = () => {
     } catch (err) {
       console.error("Error updating room:", err);
       const errMsg = err.response?.data?.message || "Failed to update room.";
-      setRoomUpdateError(errMsg);
-      setRoomUpdateMsg("");
+      //setRoomUpdateError(errMsg);
+      //setRoomUpdateMsg("");
+      console.error(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -457,7 +465,8 @@ const OwnerDashboard = () => {
     } catch (err) {
       console.error("Error fetching room by ID:", err);
       setFetchedRoom(null);
-      setRoomActionMsg("Room not found.");
+      //setRoomActionMsg("Room not found.");
+      toast.error("Room not found.");
     }
   };
 
@@ -469,7 +478,8 @@ const OwnerDashboard = () => {
     } catch (err) {
       console.error("Error fetching rooms:", err);
       setRoomList([]);
-      setRoomActionMsg("Could not fetch rooms.");
+
+      toast.error("Room not found.");
     }
   };
 
@@ -480,6 +490,7 @@ const OwnerDashboard = () => {
     } catch (err) {
       console.error("Error deleting room:", err);
       setRoomActionMsg("Failed to delete room.");
+      toast.error("Failed to delete room.");
     }
   };
 
@@ -503,7 +514,7 @@ const OwnerDashboard = () => {
       console.log("Fetched PG List:", pgRes.data); // <--- add here
     } catch (err) {
       console.error("Error fetching data:", err);
-      setError("Failed to load owner or PG properties.");
+      toast.error("Failed to load owner or PG properties.");
     }
   };
 
@@ -523,28 +534,15 @@ const OwnerDashboard = () => {
 
   const handleAddService = async () => {
     try {
-      await addService(ownerId, serviceData, token); // assuming you have ownerId & token in scope
+      await addService(ownerId, serviceData, token);
       setServiceAddMsg("Service added successfully!");
       setServiceAddError("");
       setServiceData({ serviceName: "", description: "" });
     } catch (error) {
       console.error("Error adding service:", error);
-      setServiceAddError(
-        error.response?.data?.message || "Failed to add service."
-      );
-      setServiceAddMsg("");
+      toast.error(error.response?.data?.message || "Failed to add service.");
     }
   };
-
-  // const handleGetServicesByPgId = async () => {
-  //   try {
-  //     const res = await getServicesByPgId(pgIdForServices, token);
-  //     setServicesList(res.data);
-  //   } catch (error) {
-  //     console.error("Error fetching services:", error);
-  //     setServicesList([]);
-  //   }
-  // };
 
   const handleGetRequestedServicesByPgId = async () => {
     if (!pgIdForServices) {
@@ -579,11 +577,11 @@ const OwnerDashboard = () => {
     console.log("Fetching reviews for PG ID:", pgId);
     try {
       const response = await getReviewByPgId(pgId, token);
-      console.log("Reviews received:", response.data); // Add this
+      console.log("Reviews received:", response.data);
       setReviews(response.data);
       setReviewError("");
     } catch (error) {
-      console.error("Review fetch failed:", error); // Add this
+      console.error("Review fetch failed:", error);
       setReviewError(
         error.response?.data?.message || "Failed to fetch reviews"
       );
@@ -600,10 +598,9 @@ const OwnerDashboard = () => {
       setBookingError("");
     } catch (error) {
       console.error("Error fetching bookings:", error);
-      setBookingError(
-        error.response?.data?.message || "Failed to fetch bookings"
+      setReviewError(
+        error.response?.data?.message || "Failed to fetch Bookings"
       );
-      setBookings([]);
     }
   };
 
@@ -671,8 +668,7 @@ const OwnerDashboard = () => {
     if (pgBooking) {
       return {
         pgId: pgBooking.pgId,
-        name: pgBooking.pgName, // or pgBooking.name if that’s the key
-        // add any other PG info available in bookings
+        name: pgBooking.pgName,
       };
     }
     return null; // not found
@@ -973,7 +969,7 @@ const OwnerDashboard = () => {
                       <td className="px-4 py-2 border">
                         <button
                           onClick={() => fetchPgById(pg.pgId)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                          className="bg-indigo-600 hover:bg-gray-500 text-white px-3 py-1 rounded"
                         >
                           View
                         </button>
@@ -1404,52 +1400,6 @@ const OwnerDashboard = () => {
           )}
         </div>
       )}
-
-      {/* {view === "getAllRooms" && (
-  <div className="bg-white p-4 border rounded mt-4">
-    <label className="block mb-2">Enter PG ID</label>
-    <input
-      type="text"
-      value={pgIdForRooms}
-      onChange={(e) => setPgIdForRooms(e.target.value)}
-      className="w-full p-2 border rounded mb-2"
-    />
-    <button onClick={handleFetchAllRooms} className="bg-blue-500 text-white px-4 py-2 rounded">
-      Fetch Rooms
-    </button>
-
-    <div className="mt-4">
-      {roomList.length > 0 ? (
-        <table className="w-full table-auto border border-collapse mt-4 text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-2 py-1">Room ID</th>
-              <th className="border px-2 py-1">Room No</th>
-              <th className="border px-2 py-1">Floor</th>
-              <th className="border px-2 py-1">Capacity</th>
-              <th className="border px-2 py-1">Price</th>
-              <th className="border px-2 py-1">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {roomList.map((room) => (
-              <tr key={room.roomId}>
-                <td className="border px-2 py-1">{room.roomId}</td>
-                <td className="border px-2 py-1">{room.roomNumber}</td>
-                <td className="border px-2 py-1">{room.floor}</td>
-                <td className="border px-2 py-1">{room.capacity}</td>
-                <td className="border px-2 py-1">₹{room.pricePerMonth}</td>
-                <td className="border px-2 py-1">{room.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p className="text-gray-500 mt-2">{roomActionMsg}</p>
-      )}
-    </div>
-  </div>
-)} */}
 
       {view === "getAllRooms" && (
         <div className="bg-white p-6 border border-gray-300 rounded-xl mt-6 shadow-lg w-full mx-auto">
@@ -2030,14 +1980,6 @@ const OwnerDashboard = () => {
                 </option>
               ))}
             </select>
-
-            {/* <button
-        onClick={() => handleGetBookingsByPgId(pgIdForBookings)}
-        disabled={!pgIdForBookings}
-        className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-      >
-        Get Bookings
-      </button> */}
           </div>
 
           {/* Table */}

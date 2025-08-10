@@ -28,6 +28,7 @@ public class PaymentServiceImpl {
 	@Autowired
 	private BookingDao bookingDao;
 	
+	
 	@Value("${razorpay.key_id}")
 	private String RAZORPAY_KEY;
 	
@@ -47,13 +48,6 @@ public class PaymentServiceImpl {
 
 	        PgProperty pgProperty = pgPropertyDao.findByPgId(dto.getPgId())
 	                .orElseThrow(() -> new ResourceNotFoundException("PG not found"));
-
-	        // Calculate user's share
-//	        double expectedAmount = room.getPricePerMonth() / room.getCapacity();
-//	        expectedAmount = Math.round(expectedAmount * 100.0) / 100.0;
-//	        
-//	        // Create order on Razorpay
-//	        Order order = createRazorpayOrder(expectedAmount);
 	        
 	        double expectedAmount = room.getPricePerMonth() / room.getCapacity();
 	        expectedAmount = Math.round(expectedAmount * 100.0) / 100.0;
@@ -63,7 +57,7 @@ public class PaymentServiceImpl {
 	        
 	        Order order = createRazorpayOrder(amountInPaise);
 
-	        // ✅ Prepare response
+	        // Prepare response
 	        JSONObject response = new JSONObject();
 	        response.put("orderId", order.get("id").toString());
 	        response.put("amount", Integer.parseInt(order.get("amount").toString()));
@@ -76,8 +70,6 @@ public class PaymentServiceImpl {
 	        throw new ApiException("Failed to create Razorpay order. Please try again.");
 	    }
 	}
-
-	
 	
 	private Order createRazorpayOrder(double amount) throws RazorpayException {
 		RazorpayClient razorpayClient = new RazorpayClient(RAZORPAY_KEY, RAZORPAY_SECRET);
