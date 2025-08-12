@@ -75,12 +75,12 @@ const AdminLayout = () => {
               bg: "bg-yellow-500",
               textColor: "text-white",
             },
-            { label: "Add Owner", viewKey: "addOwner", bg: "bg-purple-600" },
+            { label: "Add Owner", viewKey: "addOwner", bg: "bg-green-600" },
             { label: "Get Reviews", viewKey: "pgReviews", bg: "bg-purple-600" },
             {
               label: "Get Bookings",
               viewKey: "pgBookings",
-              bg: "bg-purple-600",
+              bg: "bg-indigo-600",
             },
           ].map(({ label, viewKey, bg, textColor }) => (
             <button

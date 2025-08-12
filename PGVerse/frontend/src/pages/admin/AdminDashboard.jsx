@@ -68,19 +68,19 @@ const AdminDashboard = () => {
     setSelected(null);
   };
 
-  useEffect(() => {
-    setSelected(null);
-    setShowAddForm(false);
-    setPgReviews([]);
+  // useEffect(() => {
+  //   setSelected(null);
+  //   setShowAddForm(false);
+  //   setPgReviews([]);
 
-    if (view === "users") {
-      getAllUsers(token).then(setUsers);
-    } else if (view === "owners") {
-      getAllOwners(token).then(setOwners);
-    } else if (view === "addOwner") {
-      setShowAddForm(true);
-    }
-  }, [view, token]);
+  //   if (view === "users") {
+  //     getAllUsers(token).then(setUsers);
+  //   } else if (view === "owners") {
+  //     getAllOwners(token).then(setOwners);
+  //   } else if (view === "addOwner") {
+  //     setShowAddForm(true);
+  //   }
+  // }, [view, token]);
 
   useEffect(() => {
     if (view === "pgReviews" || view === "pgBookings") {
@@ -290,49 +290,56 @@ const AdminDashboard = () => {
       )}
 
       {(view === "users" || view === "owners") && (
-        <div className="overflow-x-auto mt-6 max-w-5xl mx-auto">
-          <table className="min-w-full table-auto border border-gray-300 rounded-lg shadow-sm">
-            <thead className="bg-gray-100">
+        <div className="overflow-x-auto mt-8 max-w-6xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200">
+          <table className="min-w-full table-auto">
+            <thead className="bg-gradient-to-r from-blue-50 to-blue-100">
               <tr>
-                <th className="px-6 py-3 text-left text-gray-700 font-semibold border-b border-gray-300">
+                <th className="px-6 py-4 text-left text-gray-700 font-bold uppercase tracking-wider border-b border-gray-200">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-gray-700 font-semibold border-b border-gray-300">
+                <th className="px-6 py-4 text-left text-gray-700 font-bold uppercase tracking-wider border-b border-gray-200">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-gray-700 font-semibold border-b border-gray-300">
+                <th className="px-6 py-4 text-left text-gray-700 font-bold uppercase tracking-wider border-b border-gray-200">
                   Phone
                 </th>
-                <th className="px-6 py-3 text-center text-gray-700 font-semibold border-b border-gray-300">
+                <th className="px-6 py-4 text-center text-gray-700 font-bold uppercase tracking-wider border-b border-gray-200">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody>
-              {(view === "users" ? users : owners).map((item) => {
+              {(view === "users" ? users : owners).map((item, idx) => {
                 const id = item.userId || item.ownerId;
                 return (
-                  <tr key={id} className="border-b hover:bg-gray-50 transition">
-                    <td className="px-6 py-3 whitespace-nowrap">{item.name}</td>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                  <tr
+                    key={id}
+                    className={`border-b border-gray-200 transition-colors ${
+                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    } hover:bg-blue-50`}
+                  >
+                    <td className="px-6 py-4 font-medium text-gray-800 whitespace-nowrap">
+                      {item.name}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
                       {item.email}
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap">
+                    <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
                       {item.phone}
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap text-center space-x-3">
+                    <td className="px-6 py-4 text-center space-x-2">
                       <button
                         onClick={() =>
                           viewDetails(id, view === "users" ? "USER" : "OWNER")
                         }
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition"
+                        className="inline-flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm shadow-sm transition"
                       >
                         View
                       </button>
                       {view === "owners" && (
                         <button
                           onClick={() => handleDelete(id)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition"
+                          className="inline-flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm shadow-sm transition"
                         >
                           Delete
                         </button>
@@ -347,30 +354,57 @@ const AdminDashboard = () => {
       )}
 
       {selected && (
-        <div className="mt-6 p-4 border rounded bg-gray-50">
-          <h2 className="text-xl font-semibold mb-2">Details</h2>
-          <p>
-            <strong>Name:</strong> {selected.name}
-          </p>
-          <p>
-            <strong>Email:</strong> {selected.email}
-          </p>
-          <p>
-            <strong>Phone:</strong> {selected.phone}
-          </p>
-          <p>
-            <strong>Address:</strong> {selected.address}
-          </p>
-          {selected.role && (
-            <p>
-              <strong>Role:</strong> {selected.role}
-            </p>
-          )}
-          {selected.aadharCard && (
-            <p>
-              <strong>Aadhar Card:</strong> {selected.aadharCard}
-            </p>
-          )}
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setSelected(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
+            >
+              &times;
+            </button>
+
+            {/* Header */}
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+              Details
+            </h2>
+
+            {/* Details */}
+            <div className="space-y-2 text-gray-700">
+              <p>
+                <strong>Name:</strong> {selected.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {selected.email}
+              </p>
+              <p>
+                <strong>Phone:</strong> {selected.phone}
+              </p>
+              <p>
+                <strong>Address:</strong> {selected.address}
+              </p>
+              {selected.role && (
+                <p>
+                  <strong>Role:</strong> {selected.role}
+                </p>
+              )}
+              {selected.aadharCard && (
+                <p>
+                  <strong>Aadhar Card:</strong> {selected.aadharCard}
+                </p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 text-right">
+              <button
+                onClick={() => setSelected(null)}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -379,8 +413,6 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
             Reviews for Selected PG
           </h2>
-
-          {/* PG Select and Fetch Button */}
           <div className="flex gap-4 mb-6">
             <select
               className="flex-grow border border-gray-300 rounded-md p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -392,7 +424,7 @@ const AdminDashboard = () => {
               </option>
               {pgList.map((pg) => (
                 <option key={pg.pgId} value={pg.pgId}>
-                  {pg.name} (ID: {pg.pgId})
+                  {pg.name}
                 </option>
               ))}
             </select>
@@ -423,37 +455,60 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          {/* Reviews Table or No Reviews Message */}
           {pgReviews.length > 0 ? (
-            <div className="overflow-x-auto rounded border border-gray-200 shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-lg mt-6">
               <table className="min-w-full bg-white text-gray-700 text-sm">
-                <thead className="bg-gray-100 border-b border-gray-300">
+                <thead className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium">
+                    <th className="px-5 py-3 text-left font-bold uppercase tracking-wide text-gray-700">
                       Review ID
                     </th>
-                    <th className="px-4 py-3 text-left font-medium">Rating</th>
-                    <th className="px-4 py-3 text-left font-medium">Comment</th>
-                    <th className="px-4 py-3 text-left font-medium">User</th>
+                    <th className="px-5 py-3 text-left font-bold uppercase tracking-wide text-gray-700">
+                      Rating
+                    </th>
+                    <th className="px-5 py-3 text-left font-bold uppercase tracking-wide text-gray-700">
+                      Comment
+                    </th>
+                    <th className="px-5 py-3 text-left font-bold uppercase tracking-wide text-gray-700">
+                      User
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pgReviews.map((review) => (
+                  {pgReviews.map((review, idx) => (
                     <tr
                       key={review.reviewId}
-                      className="border-b last:border-b-0 hover:bg-gray-50"
+                      className={`border-b border-gray-200 transition-colors ${
+                        idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      } hover:bg-blue-50`}
                     >
-                      <td className="px-4 py-3">{review.reviewId}</td>
-                      <td className="px-4 py-3">{review.rating}</td>
-                      <td className="px-4 py-3">{review.comment}</td>
-                      <td className="px-4 py-3">{review.userName || "N/A"}</td>
+                      <td className="px-5 py-3 font-medium">
+                        {review.reviewId}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span
+                          className={`px-2 py-1 rounded-full text-white text-xs font-semibold ${
+                            review.rating >= 4
+                              ? "bg-green-500"
+                              : review.rating >= 2
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                          }`}
+                        >
+                          {review.rating}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-gray-600">
+                        {review.comment}
+                      </td>
+                      <td className="px-5 py-3">{review.userName || "N/A"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <p className="text-center text-gray-500 mt-8">
+            <p className="text-center text-gray-500 mt-8 text-sm italic">
               No reviews to show. Please select a PG and fetch reviews.
             </p>
           )}
@@ -475,7 +530,7 @@ const AdminDashboard = () => {
               <option value="">Select a PG</option>
               {pgList.map((pg) => (
                 <option key={pg.pgId} value={pg.pgId}>
-                  {pg.name} (ID: {pg.pgId})
+                  {pg.name}
                 </option>
               ))}
             </select>

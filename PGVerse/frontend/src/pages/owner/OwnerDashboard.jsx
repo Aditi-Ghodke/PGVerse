@@ -206,7 +206,6 @@ const OwnerDashboard = () => {
         setPgSuccess("PG Property updated successfully");
       } else {
         await addPgProperty(ownerId, pgForm, pgImageFile, token);
-        // setPgSuccess("PG Property added successfully");
         toast.success("PG Property added successfully");
       }
       setPgForm({ name: "", location: "", description: "", pgtype: "" });
@@ -218,9 +217,7 @@ const OwnerDashboard = () => {
       setPgList(res.data || []);
     } catch (err) {
       console.error("PG property save failed:", err);
-      const errMsg =
-        err.response?.data?.message || "Failed to save PG Property";
-      setPgError(errMsg);
+      toast.error(err.response?.data?.message || "Failed to save PG Property");
     }
   };
 
@@ -774,7 +771,7 @@ const OwnerDashboard = () => {
           <div className="flex space-x-2">
             <button
               type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-gray-500"
             >
               Save
             </button>
@@ -814,7 +811,7 @@ const OwnerDashboard = () => {
             />
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-gray-500"
             >
               Change Password
             </button>
@@ -880,7 +877,7 @@ const OwnerDashboard = () => {
               />
               <button
                 type="submit"
-                className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-gray-500"
               >
                 {pgUpdateMode ? "Update PG Property" : "Add PG Property"}
               </button>

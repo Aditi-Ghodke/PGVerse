@@ -15,7 +15,6 @@ import {
 const PgDetailsPage = () => {
   const { pgId } = useParams();
   const navigate = useNavigate();
-  const { pgPropertId } = useParams();
 
   const [pg, setPg] = useState(null);
   const [rooms, setRooms] = useState([]);
@@ -237,58 +236,95 @@ const PgDetailsPage = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">{pg.name}</h1>
-      <p className="mb-2">
-        {pg.location} | {pg.pgType} | {pg.status}
+      <p className="text-gray-600 mb-4 text-lg">
+        {pg.location} • {pg.pgType} •
+        <span
+          className={`ml-1 font-semibold ${
+            pg.status === "Available" ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {pg.status}
+        </span>
       </p>
-      <p className="mb-6">{pg.description}</p>
+      <p className="mb-6 text-gray-700 leading-relaxed">{pg.description}</p>
       <img
         src={`http://localhost:8080/${pg.imagePath}`}
         alt={pg.name}
         className="w-full max-h-96 object-cover mb-6 rounded"
       />
 
-      <h2 className="text-2xl font-semibold mb-4">Rooms</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      <h2 className="text-3xl font-semibold mb-6 text-gray-800">Rooms</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
         {rooms.map((room, index) => (
           <div
             key={room.roomId ?? `room-${index}`}
-            className={`border p-4 rounded cursor-pointer ${
+            className={`rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border ${
               selectedRoom?.roomId === room.roomId
-                ? "border-blue-500 shadow"
-                : "border-gray-300"
-            }`}
+                ? "border-blue-500 ring-2 ring-blue-300"
+                : "border-gray-200"
+            } cursor-pointer`}
             onClick={() => handleRoomSelect(room)}
           >
             <img
               src={`http://localhost:8080/${room.imagePath}`}
               alt={`Room ${room.roomNumber || room.roomId}`}
-              className="w-full h-40 object-cover rounded mb-2"
+              className="w-full h-48 object-cover"
             />
-            <p>PGId: {room.pgId}</p>
-            <p>Room ID: {room.roomId}</p>
-            <p>Floor: {room.floor}</p>
-            <p>Capacity: {room.capacity}</p>
-            <p>Price: ₹{room.pricePerMonth}</p>
-            <p>Status: {room.status}</p>
+            <div className="p-4 bg-white">
+              <p className="text-sm text-gray-500">PG ID: {room.pgId}</p>
+              <p className="font-bold text-lg">
+                Room {room.roomNumber || room.roomId}
+              </p>
+              <p className="text-gray-600">Floor: {room.floor}</p>
+              <p className="text-gray-600">Capacity: {room.capacity} people</p>
+              <p className="text-blue-600 font-semibold">
+                ₹{room.pricePerMonth} / month
+              </p>
+              <p
+                className={`font-semibold ${
+                  room.status === "Available"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {room.status}
+              </p>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Selected Room Info & Booking Dates */}
       {selectedRoom && (
-        <div className="mb-6 p-4 border rounded bg-gray-50">
-          <h3 className="text-xl font-semibold mb-2">Selected Room Details</h3>
-          <p>
-            <strong>Room ID:</strong> {selectedRoom.roomId}
-          </p>
-          <p>
-            <strong>Price:</strong> ₹{selectedRoom.pricePerMonth}
-          </p>
-          <p>
-            <strong>Pg:</strong> ₹{selectedRoom.pgId}
-          </p>
+        <div className="mb-6 p-6 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+          <h3 className="text-2xl font-bold mb-4 text-gray-800 border-b pb-2">
+            Selected Room Details
+          </h3>
+
+          {/* Room Info */}
+          <div className="space-y-2 mb-4">
+            <p className="text-gray-700">
+              <strong className="font-medium text-gray-900">Room ID:</strong>{" "}
+              {selectedRoom.roomId}
+            </p>
+            <p className="text-gray-700">
+              <strong className="font-medium text-gray-900">Price:</strong>{" "}
+              <span className="text-blue-600 font-semibold">
+                ₹{selectedRoom.pricePerMonth}
+              </span>
+            </p>
+            {/* <p className="text-gray-700">
+              <strong className="font-medium text-gray-900">PG ID:</strong>{" "}
+              {selectedRoom.pgId}
+            </p> */}
+          </div>
+
+          {/* Check-In Date */}
           <div className="mt-4">
-            <label className="block mb-1 font-medium" htmlFor="checkInDate">
+            <label
+              className="block mb-1 font-medium text-gray-800"
+              htmlFor="checkInDate"
+            >
               Check-In Date:
             </label>
             <input
@@ -296,13 +332,17 @@ const PgDetailsPage = () => {
               id="checkInDate"
               value={checkInDate}
               onChange={(e) => setCheckInDate(e.target.value)}
-              className="border rounded px-3 py-2 w-full max-w-xs"
-              min={new Date().toISOString().split("T")[0]} // prevent past dates
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+              min={new Date().toISOString().split("T")[0]}
             />
           </div>
 
+          {/* Check-Out Date */}
           <div className="mt-4">
-            <label className="block mb-1 font-medium" htmlFor="checkOutDate">
+            <label
+              className="block mb-1 font-medium text-gray-800"
+              htmlFor="checkOutDate"
+            >
               Check-Out Date:
             </label>
             <input
@@ -310,8 +350,8 @@ const PgDetailsPage = () => {
               id="checkOutDate"
               value={checkOutDate}
               onChange={(e) => setCheckOutDate(e.target.value)}
-              className="border rounded px-3 py-2 w-full max-w-xs"
-              min={checkInDate || new Date().toISOString().split("T")[0]} // checkOutDate can't be before checkInDate
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+              min={checkInDate || new Date().toISOString().split("T")[0]}
             />
           </div>
         </div>
@@ -323,23 +363,37 @@ const PgDetailsPage = () => {
         Book Now
       </button>
 
-      <h2 className="text-2xl font-semibold mt-10 mb-4">Reviews</h2>
-      {reviews.length === 0 && <p>No reviews yet.</p>}
-      {reviews.map((review) => (
-        <div
-          key={review.reviewId ?? `${review.userName}-${review.feedbackDate}`}
-          className="border p-4 rounded mb-4"
-        >
-          <p className="font-semibold">
-            ⭐ {review.rating} by {review.userName}
-          </p>
-          <p>{review.comment}</p>
-          {/* <p className="text-sm text-gray-500">{new Date(review.feedbackDate).toLocaleDateString()}</p> */}
-          <p className="text-xs text-gray-400">
-            Date: {formatDate(review.feedbackDate)}
-          </p>
-        </div>
-      ))}
+      <h2 className="text-3xl font-semibold mt-10 mb-6 text-gray-800">
+        Reviews
+      </h2>
+
+      {reviews.length === 0 && (
+        <p className="text-gray-500 italic">No reviews yet.</p>
+      )}
+
+      <div className="space-y-4">
+        {reviews.map((review) => (
+          <div
+            key={review.reviewId ?? `${review.userName}-${review.feedbackDate}`}
+            className="bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md transition-shadow duration-300"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <p className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                <span className="text-yellow-500">⭐</span>
+                {review.rating}{" "}
+                <span className="text-sm text-gray-500">
+                  by {review.userName}
+                </span>
+              </p>
+              <p className="text-xs text-gray-400">
+                {formatDate(review.feedbackDate)}
+              </p>
+            </div>
+
+            <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+          </div>
+        ))}
+      </div>
 
       {isLoggedIn && (
         <div className="mt-10 border p-4 rounded">
